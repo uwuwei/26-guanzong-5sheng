@@ -181,13 +181,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 .tt-heading{font-size:13px;font-weight:700;color:#333;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .tt-heading .tt-hint{font-size:11px;color:#999;font-weight:400;}
 .tt-row{display:flex;align-items:stretch;gap:8px;margin-bottom:5px;min-height:30px;}
-.tt-label{flex:0 0 74px;font-size:12px;font-weight:700;color:#37474f;display:flex;align-items:center;justify-content:center;padding:6px 4px;white-space:nowrap;background:#e8eef3;border:1px solid #d5dde5;border-radius:6px;}
-.tt-bar{flex:1;display:flex;gap:2px;border-radius:6px;overflow:hidden;min-width:0;background:#eef0f3;}
-.tt-block{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;color:#333;font-size:11px;font-weight:600;cursor:pointer;transition:filter .15s,box-shadow .15s;overflow:hidden;padding:5px 6px;min-width:0;gap:2px 5px;line-height:1.25;user-select:none;position:relative;text-align:center;}
-.tt-block:hover{filter:brightness(.94);}
-.tt-block.active{color:#fff;font-weight:800;outline:3px solid #ff6b00;outline-offset:-3px;box-shadow:0 0 0 2px rgba(255,107,0,.22);z-index:1;}
-.tt-block.active .tt-name::before{content:"✓ ";}
-.tt-block.zero{background:#eef0f2 !important;color:#b8bcc0 !important;cursor:default;min-width:40px;flex-grow:0;outline:none !important;box-shadow:none !important;}
+.tt-cell{display:flex;align-items:stretch;gap:8px;flex:1;min-width:0;}
+.tt-row.multi{gap:14px;}
+.tt-label{flex:0 0 auto;font-size:11px;font-weight:500;color:#37474f;display:inline-flex;align-items:center;justify-content:center;padding:4px 12px;line-height:1.5;white-space:nowrap;background:#e8eef3;border:1px solid #d5dde5;border-radius:8px;align-self:center;}
+.tt-bar{flex:1;display:flex;gap:4px;min-width:0;background:transparent;}
+.tt-block{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;color:#4E6168;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;overflow:hidden;padding:4px 12px;min-width:0;gap:2px 5px;line-height:1.5;user-select:none;position:relative;text-align:center;border:1px solid #D7E2E1;border-radius:8px;background:#fff;}
+.tt-block:hover{background:#f4f8f8;border-color:#3A6A72;}
+.tt-block.active{background:#3A6A72;color:#fff;border-color:#3A6A72;font-weight:600;}
+.tt-block.zero{background:#F8F9FA;color:#C0C4C8;cursor:default;min-width:40px;flex-grow:0;border-color:#EEF0F3;}
 .tt-block .tt-name{white-space:normal;overflow:hidden;text-overflow:clip;word-break:break-word;overflow-wrap:break-word;max-width:100%;}
 .tt-block .tt-count{font-size:10px;opacity:.9;white-space:nowrap;flex-shrink:0;}
 .tt-total{flex:0 0 60px;font-size:11px;color:#888;font-weight:600;display:flex;align-items:center;padding-left:2px;justify-content:flex-start;white-space:nowrap;}
@@ -204,6 +205,49 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
   .tt-block .tt-count{font-size:9px;}
   .tt-total{flex:0 0 50px;font-size:10px;}
   .rank-scroll{max-height:70vh;}
+}
+
+/* --- Tab 结构:成果 vs 策划 --- */
+.tab-bar { max-width: 1320px; margin: 0 auto 24px; display: flex; gap: 4px; border-bottom: 2px solid #e5e8ec; padding: 0 4px; position: sticky; top: 0; z-index: 100; background: #f5f6f8; }
+.tab-btn { flex: 0 0 auto; padding: 14px 26px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #888; font-size: 15px; font-weight: 700; cursor: pointer; margin-bottom: -2px; transition: all .18s; letter-spacing: .5px; }
+.tab-btn:hover { color: #dc3c28; }
+.tab-btn.active { color: #dc3c28; border-bottom-color: #dc3c28; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* --- 顶部 KPI 条 + 面包屑筛选 --- */
+.kpi-strip{max-width:1320px;margin:0 auto 10px;display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 3px 16px rgba(0,0,0,0.07);}
+.kpi-item{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px;border-right:1px solid #eef0f3;min-height:56px;}
+.kpi-item:last-child{border-right:none;}
+.kpi-value{font-size:22px;font-weight:800;color:#2c3e50;line-height:1.15;letter-spacing:.3px;}
+.kpi-value.small{font-size:16px;}
+.kpi-value .dist{display:inline-flex;gap:3px;font-size:13px;}
+.kpi-value .dist span{padding:1px 7px;border-radius:10px;font-weight:700;line-height:1.4;min-width:22px;text-align:center;}
+.kpi-value .dist .l1{background:#e8f5e9;color:#2e7d32;}
+.kpi-value .dist .l2{background:#c8e6c9;color:#1b5e20;}
+.kpi-value .dist .l3{background:#fff3e0;color:#e65100;}
+.kpi-value .dist .l4{background:#ffcdd2;color:#b71c1c;}
+.kpi-value .dist .l5{background:#b71c1c;color:#fff;}
+.kpi-label{font-size:11px;color:#888;margin-top:6px;text-align:center;line-height:1.3;font-weight:600;letter-spacing:.2px;}
+
+.crumb-strip{max-width:1320px;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;padding:0 8px;min-height:20px;}
+.crumb-strip:empty{margin:0;min-height:0;}
+.crumb-prefix{color:#888;font-weight:600;font-size:11px;margin-right:2px;}
+.crumb-chip{display:inline-flex;align-items:center;gap:4px;background:#eef2f6;color:#2c3e50;padding:3px 9px;border-radius:14px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid #dfe4e8;}
+.crumb-chip:hover{background:#dc3c28;color:#fff;border-color:#dc3c28;}
+.crumb-chip .x{opacity:.6;font-size:11px;font-weight:800;margin-left:2px;}
+.crumb-chip:hover .x{opacity:1;}
+.crumb-chip .cat{color:#888;font-weight:400;font-size:11px;margin-right:1px;}
+.crumb-chip:hover .cat{color:rgba(255,255,255,.85);}
+.crumb-clear{background:transparent;color:#dc3c28;border:1px solid #dc3c28;padding:2px 10px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;margin-left:auto;}
+.crumb-clear:hover{background:#dc3c28;color:#fff;}
+
+@media (max-width:900px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr);padding:10px;}
+  .kpi-item{border-right:none;border-bottom:1px solid #eef0f3;padding:8px 4px;}
+  .kpi-item:nth-last-child(-n+2){border-bottom:none;}
+  .kpi-value{font-size:18px;}
+  .kpi-value .dist{font-size:11px;}
 }
 
 .type-click { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; user-select: none; border: 1px solid transparent; }
@@ -384,11 +428,29 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
   <p>川渝云贵陕 MBA / MPA / MEM / MTA 全日制 / 非全日制 · 2026年数据 · 273个招生项目（76所学校） · 分段难度曲线 · 扩招用复录比修正竞争比 · 招生规模修正</p>
 </div>
 
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="results">🎯 查院校</button>
+  <button class="tab-btn" data-tab="overview">🌏 院校全景</button>
+  <button class="tab-btn" data-tab="method">📐 难度规则</button>
+</div>
+
+<div class="tab-panel active" data-tab="results">
+
 <!-- ========== 第一部分：院校难度排名 ========== -->
 <div class="section-title">一、院校难度排名</div>
 <div class="section-subtitle" style="text-align:center">完整273项 · 可筛选可排序</div>
 
 <div class="ranking-section">
+
+<div class="kpi-strip">
+  <div class="kpi-item"><div class="kpi-value" id="kpiCount">273</div><div class="kpi-label">当前项目数</div></div>
+  <div class="kpi-item"><div class="kpi-value small" id="kpiLevelDist"></div><div class="kpi-label">难度分档 · 很易/易/中/较难/很难</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgYi">—</div><div class="kpi-label">平均真实竞争比</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgScore">—</div><div class="kpi-label">平均复试线</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgTuition">—</div><div class="kpi-label">平均学费(万)</div></div>
+</div>
+<div class="crumb-strip" id="crumbStrip"></div>
+
   <div class="filter-panel">
   <div class="fp-toolbar">
     <input type="text" id="fpSearch" placeholder="搜索院校名称...">
@@ -413,7 +475,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     <button id="fpReset">重置筛选</button>
     <span class="fp-count">显示 <b id="fpCount">273</b> / 273 项</span>
   </div>
-  <div class="fp-filters" id="fpChips"></div>
   <div class="fp-ranges">
     <div class="fp-range"><label>难度值</label><span>1-10</span><input type="number" id="dMin" placeholder="最小" min="1" max="10" step="0.1">~<input type="number" id="dMax" placeholder="最大" min="1" max="10" step="0.1"></div>
     <div class="fp-range"><label>复试线</label><span>136-240</span><input type="number" id="sMin" placeholder="最小" min="130" max="250">~<input type="number" id="sMax" placeholder="最大" min="130" max="250"></div>
@@ -454,6 +515,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 </div>
 
 </div>
+
+</div><!-- /tab-panel results -->
+<div class="tab-panel" data-tab="overview">
 
 <!-- ========== 第二部分：难度值分布 ========== -->
 <div class="section-title">二、难度值分布</div>
@@ -727,6 +791,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
 
 <!-- 2.2 难度值分布图 -->
 
+</div><!-- /tab-panel overview -->
+<div class="tab-panel" data-tab="method">
+
 <!-- ========== 第四部分：规则说明 ========== -->
 <div class="rule-section">
 
@@ -958,6 +1025,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC"
     </div>
   </div>
 </div>
+
+</div><!-- /tab-panel method -->
 
 <script>
 // 院校数据
@@ -1363,34 +1432,31 @@ function toggleDetail(el) {
   var state={q:'',sortKey:'difficulty',sortDir:'asc',sel:{major:{},province:{},city:{},area:{},level:{},type:{},study_mode:{},class_mode:{},college_diploma:{},veteran:{},minority:{},yiratio_band:{}},dMin:'',dMax:'',sMin:'',sMax:'',tMin:'',tMax:'',durMin:'',durMax:''};
   var cityOpts=Array.from(new Set(DATA.map(function(s){return s.city;}).filter(Boolean))).sort(function(a,b){return String(a).localeCompare(String(b),'zh');});
   var opts={major:['MBA','MPA','MEM','MTA'],province:['四川','重庆','云南','贵州','陕西'],city:cityOpts,area:['A','B'],level:['很容易','容易','中等','较难','很难'],type:['A','B','C','D','E','F','G','H'],study_mode:['非全日制','全日制','半全日制'],college_diploma:['可报','不可报'],class_mode:['周末班','隔周周末班','月度集中班','学期集中班','晚班','周中+周末半脱产','周一至周五全脱产','线上+线下集中班'],veteran:['是','否'],minority:['是','否'],yiratio_band:['0-1','1-2','2以上','无一志愿']};
-  var cats=[['major','专业'],['province','省份'],['city','城市'],['area','考区'],['study_mode','学习方式'],['class_mode','上课方式'],['college_diploma','大专'],['veteran','退役计划'],['minority','少骨计划'],['level','难度'],['type','类型']];
-  var chipCatColors={major:['#e3f0fa','#a8c8e8','#0d47a1'],province:['#efe6f5','#c9b4d8','#4a148c'],city:['#e5f1ee','#a8d0c5','#004d40'],area:['#e8f1f5','#b0cad5','#37474f'],study_mode:['#fbeadc','#f4c896','#bf360c'],class_mode:['#fbf4d6','#d5c47a','#6b5b1b'],college_diploma:['#f7e3ea','#e8b8ce','#880e4f'],veteran:['#eaf1d7','#c5d99a','#33691e'],minority:['#f2e9d3','#dcc99a','#5d4037'],level:['#f7dfd8','#e8a89a','#b71c1c'],type:['#e0e5eb','#a2adba','#37474f']};
-  var ch='';
-  cats.forEach(function(c){var cat=c[0],lb=c[1],col=chipCatColors[cat]||['#eef2f6','#d5dde5','#37474f'];ch+='<div class="fp-group"><label style="background:'+col[0]+';border-color:'+col[1]+';color:'+col[2]+';">'+lb+'</label><div class="chips" data-cat="'+cat+'">';opts[cat].forEach(function(o){ch+='<span class="chip" data-cat="'+cat+'" data-val="'+o+'">'+o+'</span>';});ch+='</div></div>';});
-  document.getElementById('fpChips').innerHTML=ch;
   function anySel(cat){for(var k in state.sel[cat])if(state.sel[cat][k])return true;return false;}
   function filter(){var out=[];for(var i=0;i<DATA.length;i++){var s=DATA[i];if(state.q&&s.name.indexOf(state.q)<0)continue;if(anySel('major')&&!state.sel.major[s.major])continue;if(anySel('province')&&!state.sel.province[s.province])continue;if(anySel('city')&&!state.sel.city[s.city])continue;if(anySel('area')&&!state.sel.area[s.area])continue;if(anySel('study_mode')&&!state.sel.study_mode[s.study_mode])continue;if(anySel('class_mode')){var cm=s.class_mode||'';var mm=false;for(var kk in state.sel.class_mode){if(state.sel.class_mode[kk]&&cm.indexOf(kk)>=0){mm=true;break;}}if(!mm)continue;}if(anySel('college_diploma')&&!state.sel.college_diploma[s.college_diploma])continue;if(anySel('veteran')&&!state.sel.veteran[s.veteran])continue;if(anySel('minority')&&!state.sel.minority[s.minority])continue;if(anySel('level')&&!state.sel.level[s.level])continue;if(anySel('type')&&!state.sel.type[s.type])continue;if(anySel('yiratio_band')){var yr=+s.yi_ratio;var yb=(s.no_applicant||s.fu===0||!isFinite(yr))?'无一志愿':((yr<1)?'0-1':(yr<2)?'1-2':'2以上');if(!state.sel.yiratio_band[yb])continue;}var d=s.difficulty,sc=s.total_score,tu=parseFloat(s.tuition)||0,dur=parseFloat(s.duration)||0;if(state.dMin&&d<+state.dMin)continue;if(state.dMax&&d>+state.dMax)continue;if(state.sMin&&sc<+state.sMin)continue;if(state.sMax&&sc>+state.sMax)continue;if(state.tMin&&tu<+state.tMin)continue;if(state.tMax&&tu>+state.tMax)continue;if(state.durMin&&dur<+state.durMin)continue;if(state.durMax&&dur>+state.durMax)continue;out.push(i);}return out;}
   function esc(t){if(!t)return '-';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-  function render(){var idxs=filter();idxs.sort(function(a,b){var va=val(DATA[a],state.sortKey),vb=val(DATA[b],state.sortKey);var r;if(typeof va==='number'&&typeof vb==='number')r=va-vb;else r=String(va).localeCompare(String(vb),'zh');return state.sortDir==='asc'?r:-r;});var html='';for(var r2=0;r2<idxs.length;r2++){var i=idxs[r2],s=DATA[i],top=r2<3?' top':'',d=s.difficulty;var rr=(s.no_applicant||s.fu===0)?'无人报考':((s.yi_ratio_real!==null&&s.yi_ratio_real!==undefined)?(+s.yi_ratio_real).toFixed(2):'—');var smTag=s.study_mode==='全日制'?'<span style="color:#1565c0;font-weight:600">全日制</span>':s.study_mode==='半全日制'?'<span style="color:#e65100;font-weight:600">半全</span>':s.study_mode;var cdTag=s.college_diploma==='可报'?'<span style="color:#2e7d32">可报</span>':'<span style="color:#b71c1c">不可报</span>';html+='<tr><td class="rank-num'+top+'">'+(r2+1)+'</td><td class="school-name">'+esc(s.name)+'<br><span style="font-size:10px;color:#bbb">'+esc(s.school_code||'')+'</span></td><td>'+s.major+'</td><td>'+s.province+'</td><td><span class="area-tag '+s.area.toLowerCase()+'">'+s.area+'区</span></td><td>'+smTag+'</td><td>'+s.duration+'</td><td class="tuit-cell">'+(parseFloat(s.tuition)||0).toFixed(1)+'</td><td>'+cdTag+'</td><td><span class="level-tag '+LVCLS[s.level]+'">'+s.level+'</span></td><td>'+rr+'</td><td>'+s.total_score+'</td><td class="score-cell"><div class="diff-bar" style="width:'+Math.round(d*10)+'%;background:'+barColor(d)+'"></div></td><td><strong>'+d.toFixed(2)+'</strong></td><td>'+s.comp_score.toFixed(1)+'</td><td>'+s.diff_score.toFixed(1)+'</td><td><span class="type-click '+tCls(s.type)+'" data-idx="'+i+'" onclick="showSchoolFunnel('+i+')">'+tLabel(s.type)+'</span></td></tr>';}document.getElementById('rankBody').innerHTML=html;document.getElementById('fpCount').textContent=idxs.length;var ths=document.querySelectorAll('.rank-table th.sortable');for(var t=0;t<ths.length;t++){var k=ths[t].getAttribute('data-key');var isOn=(k===state.sortKey);ths[t].classList.toggle('sorted',isOn);var ar=ths[t].querySelector('.arrow');if(ar)ar.textContent=isOn?(state.sortDir==='asc'?'▲':'▼'):'↕';}var sel=document.getElementById('fpSortKey');if(sel)sel.value=state.sortKey;var bd=document.getElementById('fpSortDir');if(bd){bd.textContent=state.sortDir==='asc'?'↑ 升序':'↓ 降序';}renderTreemap();}
+  function render(){var idxs=filter();idxs.sort(function(a,b){var va=val(DATA[a],state.sortKey),vb=val(DATA[b],state.sortKey);var r;if(typeof va==='number'&&typeof vb==='number')r=va-vb;else r=String(va).localeCompare(String(vb),'zh');return state.sortDir==='asc'?r:-r;});var html='';for(var r2=0;r2<idxs.length;r2++){var i=idxs[r2],s=DATA[i],top=r2<3?' top':'',d=s.difficulty;var rr=(s.no_applicant||s.fu===0)?'无人报考':((s.yi_ratio_real!==null&&s.yi_ratio_real!==undefined)?(+s.yi_ratio_real).toFixed(2):'—');var smTag=s.study_mode==='全日制'?'<span style="color:#1565c0;font-weight:600">全日制</span>':s.study_mode==='半全日制'?'<span style="color:#e65100;font-weight:600">半全</span>':s.study_mode;var cdTag=s.college_diploma==='可报'?'<span style="color:#2e7d32">可报</span>':'<span style="color:#b71c1c">不可报</span>';html+='<tr><td class="rank-num'+top+'">'+(r2+1)+'</td><td class="school-name">'+esc(s.name)+'<br><span style="font-size:10px;color:#bbb">'+esc(s.school_code||'')+'</span></td><td>'+s.major+'</td><td>'+s.province+'</td><td><span class="area-tag '+s.area.toLowerCase()+'">'+s.area+'区</span></td><td>'+smTag+'</td><td>'+s.duration+'</td><td class="tuit-cell">'+(parseFloat(s.tuition)||0).toFixed(1)+'</td><td>'+cdTag+'</td><td><span class="level-tag '+LVCLS[s.level]+'">'+s.level+'</span></td><td>'+rr+'</td><td>'+s.total_score+'</td><td class="score-cell"><div class="diff-bar" style="width:'+Math.round(d*10)+'%;background:'+barColor(d)+'"></div></td><td><strong>'+d.toFixed(2)+'</strong></td><td>'+s.comp_score.toFixed(1)+'</td><td>'+s.diff_score.toFixed(1)+'</td><td><span class="type-click '+tCls(s.type)+'" data-idx="'+i+'" onclick="showSchoolFunnel('+i+')">'+tLabel(s.type)+'</span></td></tr>';}document.getElementById('rankBody').innerHTML=html;document.getElementById('fpCount').textContent=idxs.length;var ths=document.querySelectorAll('.rank-table th.sortable');for(var t=0;t<ths.length;t++){var k=ths[t].getAttribute('data-key');var isOn=(k===state.sortKey);ths[t].classList.toggle('sorted',isOn);var ar=ths[t].querySelector('.arrow');if(ar)ar.textContent=isOn?(state.sortDir==='asc'?'▲':'▼'):'↕';}var sel=document.getElementById('fpSortKey');if(sel)sel.value=state.sortKey;var bd=document.getElementById('fpSortDir');if(bd){bd.textContent=state.sortDir==='asc'?'↑ 升序':'↓ 降序';}renderTreemap();renderKpi(idxs);renderCrumbs();}
   document.getElementById('fpSearch').addEventListener('input',function(e){state.q=e.target.value.trim();render();});
   document.getElementById('fpSortKey').addEventListener('change',function(e){state.sortKey=e.target.value;render();});
   document.getElementById('fpSortDir').addEventListener('click',function(){state.sortDir=state.sortDir==='asc'?'desc':'asc';render();});
   document.getElementById('fpReset').addEventListener('click',function(){state.q='';state.sortKey='difficulty';state.sortDir='asc';state.sel={major:{},province:{},city:{},area:{},level:{},type:{},study_mode:{},class_mode:{},college_diploma:{},veteran:{},minority:{},yiratio_band:{}};state.dMin=state.dMax=state.sMin=state.sMax=state.tMin=state.tMax=state.durMin=state.durMax='';document.getElementById('fpSearch').value='';['dMin','dMax','sMin','sMax','tMin','tMax','durMin','durMax'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var ch2=document.querySelectorAll('.chip.active');for(var i=0;i<ch2.length;i++)ch2[i].classList.remove('active');render();});
-  document.getElementById('fpChips').addEventListener('click',function(e){var el=e.target;if(el.classList.contains('chip')){var cat=el.getAttribute('data-cat'),v=el.getAttribute('data-val');if(state.sel[cat][v])delete state.sel[cat][v];else state.sel[cat][v]=true;el.classList.toggle('active');render();}});
   ['dMin','dMax','sMin','sMax','tMin','tMax','durMin','durMax'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',function(e){state[id]=e.target.value.trim();render();});});
   var ths2=document.querySelectorAll('.rank-table th.sortable');for(var i=0;i<ths2.length;i++){ths2[i].addEventListener('click',function(){var k=this.getAttribute('data-key');if(state.sortKey===k)state.sortDir=state.sortDir==='asc'?'desc':'asc';else{state.sortKey=k;state.sortDir='asc';}render();});}
 
   // --- 标签院校数量看板 ---
+  var CITY_TO_PROV={};DATA.forEach(function(s){if(s.city&&s.province)CITY_TO_PROV[s.city]=s.province;});
+  var PROV_ORDER={'四川':0,'重庆':1,'云南':2,'贵州':3,'陕西':4};
   var tmCats=[
-    ['major','专业','#a8c8e8','#0d47a1','#e3f0fa'],
-    ['province','省份','#c9b4d8','#4a148c','#efe6f5'],
-    ['city','城市','#a8d0c5','#004d40','#e5f1ee'],
-    ['study_mode','学习方式','#f4c896','#bf360c','#fbeadc'],
-    ['college_diploma','大专','#e8b8ce','#880e4f','#f7e3ea'],
-    ['veteran','退役计划','#c5d99a','#33691e','#eaf1d7'],
-    ['minority','少骨计划','#dcc99a','#5d4037','#f2e9d3'],
-    ['level','难度','#e8a89a','#b71c1c','#f7dfd8'],
-    ['yiratio_band','一志愿竞争比','#b8c9d8','#263238','#e5ecf1']
+    ['major','专业','#a8c8e8','#0d47a1','#e3f0fa','A'],
+    ['province','省份','#c9b4d8','#4a148c','#efe6f5','B'],
+    ['city','城市','#a8d0c5','#004d40','#e5f1ee','C'],
+    ['study_mode','学习方式','#f4c896','#bf360c','#fbeadc','D'],
+    ['yiratio_band','一志愿竞争比','#b8c9d8','#263238','#e5ecf1','D'],
+    ['class_mode','上课方式','#c9a48a','#7b3e1e','#f0e0d3','E'],
+    ['college_diploma','大专','#e8b8ce','#880e4f','#f7e3ea','F'],
+    ['veteran','退役','#c5d99a','#33691e','#eaf1d7','F'],
+    ['minority','少骨','#dcc99a','#5d4037','#f2e9d3','F'],
+    ['level','难度','#e8a89a','#b71c1c','#f7dfd8','G']
   ];
   function yiBand(s){if(s.no_applicant||s.fu===0)return '无一志愿';var r=+s.yi_ratio;if(!isFinite(r))return '无一志愿';if(r<1)return '0-1';if(r<2)return '1-2';return '2以上';}
   function matchExcept(s,exceptCat){
@@ -1424,30 +1490,59 @@ function toggleDetail(el) {
   }
   function renderTreemap(){
     var host=document.getElementById('tagTreemap');if(!host)return;
-    var html='';
+    var groups=[],gMap={};
     tmCats.forEach(function(tc){
-      var cat=tc[0],lb=tc[1],baseColor=tc[2],activeColor=tc[3];
-      var counts={},total=0;
-      opts[cat].forEach(function(o){counts[o]=0;});
-      for(var i=0;i<DATA.length;i++){
-        if(!matchExcept(DATA[i],cat))continue;
-        var v=cat==='yiratio_band'?yiBand(DATA[i]):DATA[i][cat];
-        if(v==null||v==='')continue;
-        if(!(v in counts))counts[v]=0;
-        counts[v]++;total++;
-      }
-      var sortedOpts=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];});
-      var blocks='';
-      sortedOpts.forEach(function(o){
-        var c=counts[o],isSel=!!state.sel[cat][o],isZero=(c===0);
-        var g=isZero?0:c;
-        var bg=isSel?activeColor:baseColor;
-        if(cat==='yiratio_band'&&o==='无一志愿'){bg=isSel?'#546e7a':'#d0d5da';}
-        var cls='tt-block'+(isSel?' active':'')+(isZero?' zero':'');
-        var style='background:'+bg+';flex-grow:'+g+';';
-        blocks+='<div class="'+cls+'" data-cat="'+cat+'" data-val="'+esc(o)+'" style="'+style+'"><span class="tt-name">'+esc(o)+'</span><span class="tt-count">'+c+'</span></div>';
+      var gid=tc[5]||tc[0];
+      if(!gMap[gid]){gMap[gid]=[];groups.push(gMap[gid]);}
+      gMap[gid].push(tc);
+    });
+    var html='';
+    groups.forEach(function(items){
+      var isMulti=items.length>1;
+      var rowHtml='<div class="tt-row'+(isMulti?' multi':'')+'">';
+      var lastTotal=0;
+      items.forEach(function(tc){
+        var cat=tc[0],lb=tc[1],baseColor=tc[2],activeColor=tc[3];
+        var counts={},total=0;
+        opts[cat].forEach(function(o){counts[o]=0;});
+        for(var i=0;i<DATA.length;i++){
+          if(!matchExcept(DATA[i],cat))continue;
+          if(cat==='class_mode'){
+            var cm=DATA[i].class_mode||'',hit=false;
+            opts.class_mode.forEach(function(o){if(cm.indexOf(o)>=0){counts[o]++;hit=true;}});
+            if(hit)total++;
+          }else{
+            var v=cat==='yiratio_band'?yiBand(DATA[i]):DATA[i][cat];
+            if(v==null||v==='')continue;
+            if(!(v in counts))counts[v]=0;
+            counts[v]++;total++;
+          }
+        }
+        lastTotal=total;
+        var sortedOpts;
+        if(cat==='city'){
+          sortedOpts=Object.keys(counts).sort(function(a,b){
+            var pa=PROV_ORDER[CITY_TO_PROV[a]||''];if(pa===undefined)pa=99;
+            var pb=PROV_ORDER[CITY_TO_PROV[b]||''];if(pb===undefined)pb=99;
+            if(pa!==pb)return pa-pb;
+            return counts[b]-counts[a];
+          });
+        }else{
+          sortedOpts=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];});
+        }
+        var blocks='';
+        sortedOpts.forEach(function(o){
+          var c=counts[o],isSel=!!state.sel[cat][o],isZero=(c===0);
+          var g2=isZero?0:c;
+          var cls='tt-block'+(isSel?' active':'')+(isZero?' zero':'');
+          var style='flex-grow:'+g2+';';
+          blocks+='<div class="'+cls+'" data-cat="'+cat+'" data-val="'+esc(o)+'" style="'+style+'"><span class="tt-name">'+esc(o)+'</span><span class="tt-count">'+c+'</span></div>';
+        });
+        var labelStyle='background:'+tc[4]+';border-color:'+tc[2]+';color:'+tc[3]+';';
+        rowHtml+='<div class="tt-cell"><div class="tt-label" style="'+labelStyle+'">'+lb+'</div><div class="tt-bar">'+blocks+'</div></div>';
       });
-      html+='<div class="tt-row"><div class="tt-label" style="background:'+tc[4]+';border-color:'+tc[2]+';color:'+tc[3]+';">'+lb+'</div><div class="tt-bar">'+blocks+'</div><div class="tt-total">'+total+' 项</div></div>';
+      rowHtml+='<div class="tt-total">'+lastTotal+' 项</div></div>';
+      html+=rowHtml;
     });
     host.innerHTML=html;
   }
@@ -1460,6 +1555,66 @@ function toggleDetail(el) {
     if(chip)chip.classList.toggle('active');
     render();
   });
+
+  // --- KPI 条 ---
+  function renderKpi(idxs){
+    var n=idxs.length,dist=[0,0,0,0,0];
+    var LM={'很容易':0,'容易':1,'中等':2,'较难':3,'很难':4};
+    var sumYi=0,cntYi=0,sumScore=0,cntScore=0,sumTu=0,cntTu=0;
+    for(var i=0;i<idxs.length;i++){
+      var s=DATA[idxs[i]];
+      if(s.level in LM)dist[LM[s.level]]++;
+      if(!(s.no_applicant||s.fu===0)&&s.yi_ratio_real!=null&&isFinite(+s.yi_ratio_real)){sumYi+=+s.yi_ratio_real;cntYi++;}
+      if(s.total_score!=null&&isFinite(+s.total_score)){sumScore+=+s.total_score;cntScore++;}
+      var tu=parseFloat(s.tuition);
+      if(isFinite(tu)&&tu>0){sumTu+=tu;cntTu++;}
+    }
+    document.getElementById('kpiCount').textContent=n;
+    document.getElementById('kpiLevelDist').innerHTML='<span class="dist"><span class="l1" title="很容易">'+dist[0]+'</span><span class="l2" title="容易">'+dist[1]+'</span><span class="l3" title="中等">'+dist[2]+'</span><span class="l4" title="较难">'+dist[3]+'</span><span class="l5" title="很难">'+dist[4]+'</span></span>';
+    document.getElementById('kpiAvgYi').textContent=cntYi?(sumYi/cntYi).toFixed(2):'—';
+    document.getElementById('kpiAvgScore').textContent=cntScore?Math.round(sumScore/cntScore):'—';
+    document.getElementById('kpiAvgTuition').textContent=cntTu?(sumTu/cntTu).toFixed(1):'—';
+  }
+
+  // --- 面包屑筛选 ---
+  var CAT_LABELS={major:'专业',province:'省份',city:'城市',area:'考区',study_mode:'学习方式',class_mode:'上课方式',college_diploma:'大专',veteran:'退役',minority:'少骨',level:'难度',type:'类型',yiratio_band:'一志愿'};
+  function renderCrumbs(){
+    var chips=[];
+    Object.keys(state.sel).forEach(function(cat){
+      Object.keys(state.sel[cat]).forEach(function(v){
+        if(state.sel[cat][v])chips.push('<span class="crumb-chip" data-cat="'+cat+'" data-val="'+esc(v)+'"><span class="cat">'+(CAT_LABELS[cat]||cat)+':</span>'+esc(v)+'<span class="x">×</span></span>');
+      });
+    });
+    if(state.q)chips.push('<span class="crumb-chip" data-q="1"><span class="cat">搜索:</span>'+esc(state.q)+'<span class="x">×</span></span>');
+    var ranges=[['dMin','dMax','难度值'],['sMin','sMax','复试线'],['tMin','tMax','学费'],['durMin','durMax','学制']];
+    ranges.forEach(function(r){
+      if(state[r[0]]||state[r[1]]){
+        var txt=(state[r[0]]||'*')+'~'+(state[r[1]]||'*');
+        chips.push('<span class="crumb-chip" data-range="'+r[0]+','+r[1]+'"><span class="cat">'+r[2]+':</span>'+txt+'<span class="x">×</span></span>');
+      }
+    });
+    var host=document.getElementById('crumbStrip');
+    if(!chips.length){host.innerHTML='';return;}
+    host.innerHTML='<span class="crumb-prefix">当前筛选</span>'+chips.join('')+'<button class="crumb-clear" id="crumbClear">全部清除</button>';
+    document.getElementById('crumbClear').addEventListener('click',function(){document.getElementById('fpReset').click();});
+    host.querySelectorAll('.crumb-chip').forEach(function(el){
+      el.addEventListener('click',function(){
+        var cat=this.getAttribute('data-cat'),v=this.getAttribute('data-val'),q=this.getAttribute('data-q'),rg=this.getAttribute('data-range');
+        if(cat){
+          delete state.sel[cat][v];
+          var chip=document.querySelector('.chip[data-cat="'+cat+'"][data-val="'+v.replace(/"/g,'\\"')+'"]');
+          if(chip)chip.classList.remove('active');
+        }else if(q){
+          state.q='';document.getElementById('fpSearch').value='';
+        }else if(rg){
+          var ks=rg.split(',');state[ks[0]]='';state[ks[1]]='';
+          var e1=document.getElementById(ks[0]),e2=document.getElementById(ks[1]);
+          if(e1)e1.value='';if(e2)e2.value='';
+        }
+        render();
+      });
+    });
+  }
 
   render();
 })();
@@ -1575,6 +1730,20 @@ function toggleDetail(el) {
   });
   input.addEventListener('keydown',function(e){if(e.key==='Enter')btn.click();});
 })();
+</script>
+<script>
+// Tab 切换
+document.querySelectorAll('.tab-btn').forEach(function(b){
+  b.addEventListener('click',function(){
+    var t=this.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(function(x){x.classList.remove('active');});
+    document.querySelectorAll('.tab-panel').forEach(function(x){x.classList.remove('active');});
+    this.classList.add('active');
+    var panel=document.querySelector('.tab-panel[data-tab="'+t+'"]');
+    if(panel)panel.classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
 </script>
 </body>
 </html>

@@ -1381,15 +1381,15 @@ function toggleDetail(el) {
 
   // --- 标签院校数量看板 ---
   var tmCats=[
-    ['major','专业','#a8c8e8','#0d47a1'],
-    ['province','省份','#c9b4d8','#4a148c'],
-    ['city','城市','#a8d0c5','#004d40'],
-    ['study_mode','学习方式','#f4c896','#bf360c'],
-    ['college_diploma','大专','#e8b8ce','#880e4f'],
-    ['veteran','退役计划','#c5d99a','#33691e'],
-    ['minority','少骨计划','#dcc99a','#5d4037'],
-    ['level','难度','#e8a89a','#b71c1c'],
-    ['yiratio_band','一志愿竞争比','#b8c9d8','#263238']
+    ['major','专业','#a8c8e8','#0d47a1','#e3f0fa'],
+    ['province','省份','#c9b4d8','#4a148c','#efe6f5'],
+    ['city','城市','#a8d0c5','#004d40','#e5f1ee'],
+    ['study_mode','学习方式','#f4c896','#bf360c','#fbeadc'],
+    ['college_diploma','大专','#e8b8ce','#880e4f','#f7e3ea'],
+    ['veteran','退役计划','#c5d99a','#33691e','#eaf1d7'],
+    ['minority','少骨计划','#dcc99a','#5d4037','#f2e9d3'],
+    ['level','难度','#e8a89a','#b71c1c','#f7dfd8'],
+    ['yiratio_band','一志愿竞争比','#b8c9d8','#263238','#e5ecf1']
   ];
   function yiBand(s){if(s.no_applicant||s.fu===0)return '无一志愿';var r=+s.yi_ratio;if(!isFinite(r))return '无一志愿';if(r<1)return '0-1';if(r<2)return '1-2';return '2以上';}
   function matchExcept(s,exceptCat){
@@ -1446,7 +1446,7 @@ function toggleDetail(el) {
         var style='background:'+bg+';flex-grow:'+g+';';
         blocks+='<div class="'+cls+'" data-cat="'+cat+'" data-val="'+esc(o)+'" style="'+style+'"><span class="tt-name">'+esc(o)+'</span><span class="tt-count">'+c+'</span></div>';
       });
-      html+='<div class="tt-row"><div class="tt-label">'+lb+'</div><div class="tt-bar">'+blocks+'</div><div class="tt-total">'+total+' 项</div></div>';
+      html+='<div class="tt-row"><div class="tt-label" style="background:'+tc[4]+';border-color:'+tc[2]+';color:'+tc[3]+';">'+lb+'</div><div class="tt-bar">'+blocks+'</div><div class="tt-total">'+total+' 项</div></div>';
     });
     host.innerHTML=html;
   }

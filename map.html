@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5省院校分布地图 · 川渝云贵陕 MBA/MPA/MEM/MTA</title>
+<link rel="stylesheet" href="./assets/leaflet-1.9.4/leaflet.css">
+<script src="./assets/leaflet-1.9.4/leaflet.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f6f8; color: #1a1a1a; line-height: 1.5; padding: 10px 16px 16px; }
+body.embed { padding: 8px 12px 12px; background: transparent; }
+body.embed .page-header { display: none; }
+
+.page-header { text-align: center; margin-bottom: 10px; padding: 4px 0; }
+.page-header h1 { font-size: 22px; color: #1a1a1a; font-weight: 800; letter-spacing: 1px; }
+.page-header p { font-size: 12px; color: #888; margin-top: 4px; }
+
+.kpi-strip{max-width:1600px;margin:0 auto 10px;display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:#fff;border-radius:12px;padding:12px 16px;box-shadow:0 4px 18px rgba(0,0,0,0.09);position:sticky;top:6px;z-index:100;}
+.kpi-item{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 8px;border-right:1px solid #eef0f3;min-height:56px;}
+.kpi-item:last-child{border-right:none;}
+.kpi-value{font-size:22px;font-weight:800;color:#2c3e50;line-height:1.15;letter-spacing:.3px;}
+.kpi-value.small{font-size:16px;}
+.kpi-value .dist{display:inline-flex;gap:3px;font-size:13px;}
+.kpi-value .dist span{padding:1px 7px;border-radius:10px;font-weight:700;line-height:1.4;min-width:22px;text-align:center;}
+.kpi-value .dist .l1{background:#e8f5e9;color:#2e7d32;}
+.kpi-value .dist .l2{background:#c8e6c9;color:#1b5e20;}
+.kpi-value .dist .l3{background:#fff3e0;color:#e65100;}
+.kpi-value .dist .l4{background:#ffcdd2;color:#b71c1c;}
+.kpi-value .dist .l5{background:#b71c1c;color:#fff;}
+.kpi-label{font-size:11px;color:#888;margin-top:6px;text-align:center;line-height:1.3;font-weight:600;}
+
+.crumb-strip{max-width:1600px;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;padding:0 8px;min-height:20px;}
+.crumb-strip:empty{margin:0;min-height:0;}
+.crumb-prefix{color:#888;font-weight:600;font-size:11px;margin-right:2px;}
+.crumb-chip{display:inline-flex;align-items:center;gap:4px;background:#eef2f6;color:#2c3e50;padding:3px 9px;border-radius:14px;font-weight:600;cursor:pointer;border:1px solid #dfe4e8;transition:all .15s;}
+.crumb-chip:hover{background:#dc3c28;color:#fff;border-color:#dc3c28;}
+.crumb-chip .x{opacity:.6;font-size:11px;font-weight:800;margin-left:2px;}
+.crumb-chip .cat{color:#888;font-weight:400;font-size:11px;margin-right:1px;}
+.crumb-chip:hover .cat{color:rgba(255,255,255,.85);}
+.crumb-clear{background:transparent;color:#dc3c28;border:1px solid #dc3c28;padding:2px 10px;border-radius:14px;font-size:11px;font-weight:600;cursor:pointer;margin-left:auto;}
+.crumb-clear:hover{background:#dc3c28;color:#fff;}
+
+.main-grid{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:260px 260px 1fr;gap:12px;}
+
+.filter-panel{background:#fff;border-radius:12px;padding:14px;box-shadow:0 3px 16px rgba(0,0,0,0.07);height:fit-content;position:sticky;top:104px;max-height:calc(100vh - 120px);overflow-y:auto;}
+.fp-toolbar{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed #eef0f3;}
+.fp-toolbar input[type=text]{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;}
+.fp-toolbar input[type=text]:focus{border-color:#2c3e50;}
+.fp-toolbar .row{display:flex;gap:6px;flex-wrap:wrap;}
+.fp-toolbar select,.fp-toolbar button{padding:6px 10px;border:1px solid #ddd;border-radius:6px;background:#fff;font-size:12px;cursor:pointer;color:#333;}
+.fp-toolbar select{flex:1;}
+.fp-toolbar button.active{background:#2c3e50;color:#fff;border-color:#2c3e50;}
+.fp-count{font-size:11px;color:#888;}
+.fp-count b{color:#2c3e50;font-size:13px;}
+
+.fp-filters{display:flex;flex-direction:column;gap:6px;margin-bottom:10px;}
+.fp-group{display:flex;flex-direction:column;gap:3px;}
+.fp-group>label{font-size:11px;font-weight:600;white-space:nowrap;background:#eef2f6;border:1px solid #d5dde5;border-radius:5px;padding:1px 7px;color:#37474f;align-self:flex-start;}
+.chips{display:flex;flex-wrap:wrap;gap:3px;}
+.chip{padding:2px 8px;border:1px solid #e0e0e0;border-radius:12px;font-size:11px;cursor:pointer;background:#fff;color:#666;transition:all .15s;user-select:none;}
+.chip:hover{border-color:#90caf9;color:#1565c0;}
+.chip.active{background:#3A6A72;color:#fff;border-color:#3A6A72;}
+
+.fp-ranges{display:flex;flex-direction:column;gap:5px;padding-top:8px;border-top:1px dashed #eef0f3;}
+.fp-range{display:flex;align-items:center;gap:4px;font-size:11px;color:#666;}
+.fp-range>label{font-weight:600;color:#555;min-width:56px;}
+.fp-range>span{color:#aaa;font-size:10px;min-width:44px;}
+.fp-range input{width:52px;padding:5px 6px;border:1px solid #ddd;border-radius:6px;font-size:11px;text-align:center;outline:none;}
+.fp-range input:focus{border-color:#2c3e50;}
+
+.map-section{background:#fff;border-radius:12px;padding:14px;box-shadow:0 3px 16px rgba(0,0,0,0.07);position:sticky;top:104px;height:calc(100vh - 120px);display:flex;flex-direction:column;}
+.map-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:0 4px;flex-shrink:0;flex-wrap:wrap;gap:4px 8px;}
+.map-title{font-size:15px;font-weight:700;color:#2c3e50;}
+.map-legend{display:flex;gap:14px;align-items:center;font-size:11px;color:#888;}
+.map-legend .diff-scale{display:flex;align-items:center;gap:2px;}
+.map-legend .diff-scale span{display:inline-block;width:14px;height:10px;}
+#mapChart{width:100%;flex:1;min-height:0;border-radius:8px;overflow:hidden;background:#e8ecef;}
+.map-loading{display:flex;justify-content:center;align-items:center;flex:1;color:#888;font-size:13px;}
+.leaflet-container{font-family:inherit;background:#f7f8fa !important;}
+.leaflet-control-zoom-slider{background:#fff;padding:10px 4px;border-radius:6px;box-shadow:0 1px 5px rgba(0,0,0,.35);margin-top:6px !important;display:flex;justify-content:center;}
+.leaflet-control-zoom-slider input[type=range]{-webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;width:16px;height:140px;cursor:pointer;accent-color:#3A6A72;}
+.province-label{color:#a8b1b8;font-size:16px;font-weight:600;text-align:center;letter-spacing:3px;pointer-events:none;text-shadow:0 0 4px #f7f8fa,0 0 4px #f7f8fa,0 0 4px #f7f8fa;}
+.city-label{color:#5a6570;font-size:11px;font-weight:500;text-align:center;pointer-events:none;white-space:nowrap;text-shadow:0 0 3px #f7f8fa,0 0 3px #f7f8fa,0 1px 2px rgba(0,0,0,.06);}
+.bubble-label{pointer-events:none;}
+.bubble-label div{color:#fff;font-size:11px;font-weight:800;text-align:center;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.6),0 0 2px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;height:100%;letter-spacing:.2px;}
+.leaflet-tooltip.bubble-tip{background:#2c3e50;color:#fff;border:none;border-radius:6px;padding:8px 12px;font-size:12px;line-height:1.6;box-shadow:0 4px 16px rgba(0,0,0,.25);white-space:nowrap;}
+.leaflet-tooltip.bubble-tip::before{border-top-color:#2c3e50;}
+.leaflet-tooltip.bubble-tip b{color:#fff;font-weight:700;}
+.leaflet-tooltip.bubble-tip .diff-num{font-weight:800;padding:1px 6px;border-radius:4px;color:#fff;}
+
+.schools-section{background:#fff;border-radius:12px;padding:12px;box-shadow:0 3px 16px rgba(0,0,0,0.07);position:sticky;top:104px;max-height:calc(100vh - 120px);display:flex;flex-direction:column;}
+.schools-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #eef0f3;flex-shrink:0;flex-wrap:wrap;gap:4px 8px;}
+.schools-title{font-size:14px;font-weight:700;color:#2c3e50;}
+.schools-title .highlight-city{color:#dc3c28;font-weight:800;margin-left:6px;font-size:12px;}
+.schools-hint{font-size:10px;color:#aaa;line-height:1.4;}
+.schools-grid{display:flex;flex-direction:column;gap:7px;overflow-y:auto;flex:1;padding-right:2px;}
+.school-card{background:#fff;border:1px solid #eef0f3;border-radius:8px;padding:9px 11px;transition:all .15s;}
+.school-card:hover{border-color:#3A6A72;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.school-card .sc-name{font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.3;display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:6px;}
+.school-card .sc-name .name-txt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.school-card .sc-name .major-tag{font-size:11px;font-weight:600;color:#3A6A72;background:#E7F0F0;padding:1px 6px;border-radius:4px;flex-shrink:0;}
+.school-card .sc-mini{display:grid;grid-template-columns:auto 1fr;gap:2px 8px;font-size:11px;}
+.school-card .sc-mini .lbl{color:#999;white-space:nowrap;}
+.school-card .sc-mini .val{color:#333;font-weight:600;text-align:right;}
+.school-card .sc-diff{margin-top:6px;padding-top:6px;border-top:1px dashed #f0f2f5;text-align:right;}
+.diff-badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;}
+.diff-badge.very-easy{background:#e8f5e9;color:#2e7d32;}
+.diff-badge.easy{background:#c8e6c9;color:#1b5e20;}
+.diff-badge.mid{background:#fff3e0;color:#e65100;}
+.diff-badge.hard{background:#ffcdd2;color:#b71c1c;}
+.diff-badge.extreme{background:#b71c1c;color:#fff;}
+
+.footer-note{max-width:1600px;margin:14px auto 0;padding:10px 14px;background:#fff8e1;border-left:3px solid #ffa726;border-radius:6px;font-size:12px;color:#e65100;line-height:1.6;}
+
+/* --- 单校详情 modal (从 pc.html 抽出) --- */
+.row{display:grid;grid-template-columns:58px 1fr 78px;align-items:center;gap:5px;margin-bottom:6px;min-height:28px;}
+.row-label{font-size:10px;color:#777;text-align:right;line-height:1.3;padding-right:2px;}
+.bar-wrap{display:flex;align-items:center;justify-content:center;position:relative;min-width:0;}
+.bar{height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,0.12);max-width:70%;overflow:hidden;min-width:26px;padding:0 5px;white-space:nowrap;}
+.bar.yi{background:linear-gradient(135deg,#4a9eff 0%,#2b7ae8 100%);}
+.bar.tj{background:linear-gradient(135deg,#ff7a6e 0%,#dc3c28 100%);}
+.rate{font-size:9px;color:#666;text-align:left;line-height:1.35;padding-left:2px;word-break:keep-all;}
+.rate strong{font-size:11px;}
+.rate.yi strong{color:#2b7ae8;}
+.rate.tj strong{color:#dc3c28;}
+.divider{text-align:center;font-size:10px;color:#bbb;margin:6px 0;padding:4px 6px;background:#f9f9fb;border-radius:4px;border:1px dashed #e0e0e0;}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;justify-content:center;align-items:flex-start;padding-top:40px;padding-bottom:40px;overflow-y:auto;}
+.modal-overlay.active{display:flex;}
+.modal-content{background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.25);max-width:640px;width:90%;padding:24px 28px;position:relative;animation:modalSlide 0.3s ease;}
+@keyframes modalSlide{from{transform:translateY(-30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+.modal-close{position:absolute;top:12px;right:16px;width:32px;height:32px;border-radius:50%;background:#f0f0f0;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#666;transition:all 0.2s;}
+.modal-close:hover{background:#dc3c28;color:#fff;}
+.modal-header{text-align:center;margin-bottom:16px;padding-right:30px;}
+.modal-header .m-type{display:inline-block;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:6px;}
+.modal-header .m-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
+.modal-header .m-city{font-size:12px;color:#aaa;}
+.modal-header .m-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-top:6px;}
+.modal-header .m-badge.very-easy,.modal-header .m-badge.easy{background:#e8f5e9;color:#2e7d32;}
+.modal-header .m-badge.mid{background:#fff8e1;color:#e65100;}
+.modal-header .m-badge.hard{background:#ffebee;color:#b71c1c;}
+.modal-header .m-badge.extreme{background:#b71c1c;color:#fff;}
+.modal-funnel{padding:0 2px;}
+.modal-score-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 6px;margin-top:14px;padding:12px;background:#f8f9fa;border-radius:8px;}
+.modal-score-item{text-align:center;}
+.modal-score-item .label{font-size:10px;color:#999;margin-bottom:2px;}
+.modal-score-item .value{font-size:16px;font-weight:700;}
+.modal-score-item .value.blue{color:#2b7ae8;}
+.modal-score-item .value.red{color:#dc3c28;}
+.modal-score-item .value.dark{color:#2c3e50;}
+.modal-info{margin-top:14px;}
+.modal-info-title{font-size:13px;font-weight:700;color:#333;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:6px;}
+.modal-info-title .icon{width:16px;height:16px;background:#2b7ae8;border-radius:4px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;}
+.info-item{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:3px 0;}
+.info-item .info-label{color:#999;white-space:nowrap;flex-shrink:0;}
+.info-item .info-value{color:#333;font-weight:600;}
+.info-item .info-value.highlight{color:#dc3c28;}
+.info-item.full{grid-column:1 / -1;}
+.info-item .info-value.long{word-break:break-all;line-height:1.5;}
+.modal-analysis{margin-top:12px;padding:10px 12px;background:#fff8e1;border-radius:8px;border-left:3px solid #ffa726;font-size:12px;color:#5d4037;line-height:1.7;}
+.modal-analysis .analysis-title{font-weight:700;margin-bottom:4px;color:#e65100;}
+.modal-detail{margin-top:12px;}
+.modal-detail-toggle{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#2b7ae8;cursor:pointer;padding:6px 0;user-select:none;}
+.modal-detail-toggle:hover{text-decoration:underline;}
+.modal-detail-toggle .arrow{transition:transform 0.2s;font-size:10px;}
+.modal-detail-toggle.open .arrow{transform:rotate(90deg);}
+.modal-detail-body{display:none;margin-top:8px;}
+.modal-detail-body.open{display:block;}
+.modal-detail-section{margin-bottom:10px;}
+.modal-detail-section .d-title{font-size:11px;font-weight:700;color:#999;margin-bottom:3px;}
+.modal-detail-section .d-content{font-size:12px;color:#444;line-height:1.7;padding:6px 10px;background:#f8f9fa;border-radius:6px;white-space:pre-line;}
+.modal-remark{margin-top:10px;padding:8px 10px;background:#fff3e0;border-radius:6px;font-size:11px;color:#e65100;line-height:1.6;}
+
+/* 清单卡片可点击 */
+.school-card{cursor:pointer;}
+
+@media (max-width:1200px){
+  .main-grid{grid-template-columns:280px 1fr;}
+  #mapChart{height:520px;}
+}
+@media (max-width:900px){
+  .main-grid{grid-template-columns:1fr;}
+  .filter-panel{position:static;max-height:none;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);padding:10px;}
+  .kpi-item{border-right:none;border-bottom:1px solid #eef0f3;padding:8px 4px;}
+  .kpi-item:nth-last-child(-n+2){border-bottom:none;}
+  .kpi-value{font-size:18px;}
+  #mapChart{height:440px;}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🗺 5省院校分布地图</h1>
+  <p>川渝云贵陕 · MBA/MPA/MEM/MTA · 273项招生 · 76所学校 · 2026年数据 · 校区级精度</p>
+</div>
+
+<div class="kpi-strip">
+  <div class="kpi-item"><div class="kpi-value" id="kpiCount">273</div><div class="kpi-label">当前项目数</div></div>
+  <div class="kpi-item"><div class="kpi-value small" id="kpiLevelDist"></div><div class="kpi-label">难度分档 · 很易/易/中/较难/很难</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgYi">—</div><div class="kpi-label">平均真实竞争比</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgScore">—</div><div class="kpi-label">平均复试线</div></div>
+  <div class="kpi-item"><div class="kpi-value" id="kpiAvgTuition">—</div><div class="kpi-label">平均学费(万)</div></div>
+</div>
+
+<div class="crumb-strip" id="crumbStrip"></div>
+
+<div class="main-grid">
+  <div class="filter-panel">
+    <div class="fp-toolbar">
+      <input type="text" id="fpSearch" placeholder="搜索院校名称...">
+      <div class="row">
+        <select id="fpSortKey">
+          <option value="difficulty">难度值</option>
+          <option value="comp_score">竞争得分</option>
+          <option value="diff_score">分数难度</option>
+          <option value="total_score">复试线</option>
+          <option value="tuition">学费</option>
+          <option value="major">专业</option>
+          <option value="province">省份</option>
+        </select>
+        <button id="fpSortDir" class="active">↑ 升序</button>
+      </div>
+      <div class="row">
+        <button id="fpReset" style="flex:1;">重置筛选</button>
+        <span class="fp-count">显示 <b id="fpCount">273</b> / 273 项</span>
+      </div>
+    </div>
+    <div class="fp-filters" id="fpChips"></div>
+    <div class="fp-ranges">
+      <div class="fp-range"><label>难度值</label><span>1-10</span><input type="number" id="dMin" placeholder="最小" min="1" max="10" step="0.1">~<input type="number" id="dMax" placeholder="最大" min="1" max="10" step="0.1"></div>
+      <div class="fp-range"><label>复试线</label><span>136-240</span><input type="number" id="sMin" placeholder="最小" min="130" max="250">~<input type="number" id="sMax" placeholder="最大" min="130" max="250"></div>
+      <div class="fp-range"><label>学费(万)</label><span>1.5-35.8</span><input type="number" id="tMin" placeholder="最小" min="0" max="50" step="0.1">~<input type="number" id="tMax" placeholder="最大" min="0" max="50" step="0.1"></div>
+      <div class="fp-range"><label>学制(年)</label><span>2-3</span><input type="number" id="durMin" placeholder="最小" min="2" max="3" step="0.5">~<input type="number" id="durMax" placeholder="最大" min="2" max="3" step="0.5"></div>
+    </div>
+  </div>
+
+  <div class="schools-section">
+    <div class="schools-header">
+      <div class="schools-title">命中院校清单<span class="highlight-city" id="highlightCity"></span></div>
+      <div class="schools-hint">点气泡聚焦某市 · 空白处恢复</div>
+    </div>
+    <div class="schools-grid" id="schoolsGrid"></div>
+  </div>
+
+  <div class="map-section">
+    <div class="map-header">
+      <div class="map-title">📍 5省招生项目地理分布 <span style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">气泡数字=命中招生项目数 · 颜色=平均综合难度 · 点气泡看详情</span></div>
+      <div class="map-legend">
+        <span>难度</span>
+        <div class="diff-scale">
+          <span style="background:#81c784"></span>
+          <span style="background:#66bb6a"></span>
+          <span style="background:#ffa726"></span>
+          <span style="background:#ef5350"></span>
+          <span style="background:#b71c1c"></span>
+        </div>
+        <span>很易 → 很难</span>
+      </div>
+    </div>
+    <div id="mapChart"></div>
+  </div>
+</div>
+
+<!-- 单校详情 modal -->
+<div class="modal-overlay" id="schoolModal" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModalBtn()">&times;</button>
+    <div class="modal-header" id="modalHeader"></div>
+    <div class="modal-funnel" id="modalFunnel"></div>
+    <div class="modal-score-row" id="modalScores"></div>
+    <div class="modal-info" id="modalInfo"></div>
+    <div class="modal-analysis" id="modalAnalysis"></div>
+    <div class="modal-detail" id="modalDetail"></div>
+    <div class="modal-remark" id="modalRemark"></div>
+  </div>
+</div>
+
+<script>
+// --- 城市坐标（城市级精度，17 个）---
+var CITY_COORDS = {
+  '西安': [108.9398, 34.3416],
+  '成都': [104.0668, 30.5728],
+  '重庆': [106.5516, 29.5628],
+  '昆明': [102.7124, 25.0407],
+  '贵阳': [106.6302, 26.6470],
+  '咸阳': [108.7051, 34.3339],
+  '南充': [106.0837, 30.7952],
+  '延安': [109.4907, 36.5960],
+  '宝鸡': [107.1451, 34.3691],
+  '汉中': [107.0284, 33.0776],
+  '绵阳': [104.6791, 31.4675],
+  '大理': [100.2413, 25.5893],
+  '德阳': [104.3982, 31.1279],
+  '泸州': [105.4433, 28.8891],
+  '铜仁': [109.1907, 27.7183],
+  '西昌': [102.2647, 27.8859],
+  '榆林': [109.7345, 38.2905]
+};
+
+// 主要城市名标注(WGS-84,只做地图上定位参考·60+ 个含四川三州)
+var MAJOR_CITIES = {
+  // 5 省会
+  '西安':[108.9398,34.3416],'成都':[104.0668,30.5728],'重庆':[106.5516,29.5628],'昆明':[102.7124,25.0407],'贵阳':[106.6302,26.6470],
+  // 陕西 10 市
+  '咸阳':[108.7051,34.3339],'宝鸡':[107.1451,34.3691],'汉中':[107.0284,33.0776],'延安':[109.4907,36.5960],'榆林':[109.7345,38.2905],'渭南':[109.5057,34.4995],'安康':[109.0290,32.6903],'商洛':[109.9309,33.8683],'铜川':[108.9793,34.9082],
+  // 四川 18 地级市
+  '绵阳':[104.6791,31.4675],'德阳':[104.3982,31.1279],'南充':[106.0837,30.7952],'泸州':[105.4433,28.8891],'宜宾':[104.6431,28.7513],'乐山':[103.7614,29.5820],'达州':[107.5024,31.2094],'雅安':[103.0416,29.9872],'广元':[105.8433,32.4356],'内江':[105.0662,29.5871],'自贡':[104.7734,29.3527],'眉山':[103.8484,30.0770],'资阳':[104.6417,30.1225],'遂宁':[105.5713,30.5133],'巴中':[106.7538,31.8579],'广安':[106.6335,30.4564],'攀枝花':[101.7160,26.5804],
+  // 四川三州(阿坝/甘孜/凉山)
+  '西昌':[102.2647,27.8859],'马尔康':[102.2064,31.9057],'九寨沟':[104.2247,33.2596],'汶川':[103.5900,31.4740],'松潘':[103.6045,32.6373],'康定':[101.9646,30.0587],'稻城':[100.2988,29.0343],'理塘':[100.2701,30.0060],'巴塘':[99.1101,30.0016],'色达':[100.3320,32.2683],'会理':[102.2445,26.6570],'盐源':[101.5107,27.4225],
+  // 云南 15 市州
+  '大理':[100.2413,25.5893],'丽江':[100.2333,26.8721],'曲靖':[103.7963,25.4907],'玉溪':[102.5468,24.3520],'保山':[99.1618,25.1120],'普洱':[100.9720,22.7772],'蒙自':[103.3854,23.3948],'芒市':[98.5883,24.4340],'楚雄':[101.5460,25.0417],'临沧':[100.0863,23.8825],'景洪':[100.7970,22.0020],'文山':[104.2445,23.3697],'昭通':[103.7170,27.3364],'香格里拉':[99.7003,27.8258],
+  // 贵州 8 市州
+  '遵义':[106.9124,27.7256],'安顺':[105.9463,26.2531],'铜仁':[109.1907,27.7183],'毕节':[105.2857,27.3018],'都匀':[107.5175,26.2593],'凯里':[107.9770,26.5834],'兴义':[104.8952,25.0919],
+  // 重庆
+  '万州':[108.4103,30.7738]
+};
+</script>
+
+<script>
+// 数据来源:iframe 嵌入时从 parent 拿(加密场景)
+(function(){
+  try{
+    if(window.parent&&window.parent!==window&&window.parent.schoolsData){
+      window.schoolsData=window.parent.schoolsData;
+      return;
+    }
+  }catch(e){}
+  // 独立打开时:友好提示
+  document.addEventListener('DOMContentLoaded',function(){
+    document.body.innerHTML='<div style="max-width:480px;margin:20vh auto;padding:32px;background:#fff;border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center;font-family:-apple-system,BlinkMacSystemFont,PingFang SC,sans-serif;line-height:1.7;">'+
+      '<div style="font-size:36px;margin-bottom:12px">🗺</div>'+
+      '<div style="font-size:16px;color:#2c3e50;font-weight:700;margin-bottom:8px">此页面是 pc-map.html 的地图模块</div>'+
+      '<div style="font-size:13px;color:#888">请通过 <b>pc-map.html</b> 访问（会自动嵌入到"🗺 分布地图"tab）</div>'+
+      '</div>';
+  });
+})();
+</script>
+
+<script>
+// --- 单校详情 modal (全局函数,气泡和清单卡片都调用) ---
+const typeInfo = {
+  'A': { short: '热门挤压型', desc: '一志愿过线人数超计划，差额复试有淘汰，竞争集中在初试', color: '#fff3e0', textColor: '#bf360c' },
+  'B': { short: '满额高录型', desc: '一志愿基本满额，进复试后录取概率高', color: '#e3f2fd', textColor: '#1565c0' },
+  'C': { short: '友好直通型', desc: '一志愿不足计划，进复试基本录取，最友好的类型', color: '#e8f5e9', textColor: '#2e7d32' },
+  'D': { short: '缺额淘汰型', desc: '一志愿不足但复试仍有淘汰', color: '#fce4ec', textColor: '#ad1457' },
+  'E': { short: '调剂补录型', desc: '一志愿不足，靠调剂补满，调剂竞争激烈', color: '#f3e5f5', textColor: '#6a1b9a' },
+  'F': { short: '温和补录型', desc: '一志愿不足，调剂竞争也不大', color: '#e0f2f1', textColor: '#00695c' },
+  'G': { short: '双重竞争型', desc: '一志愿竞争激烈且调剂也激烈', color: '#fff8e1', textColor: '#e65100' },
+  'H': { short: '调剂主导型', desc: '一志愿录取少，主要靠调剂', color: '#ffebee', textColor: '#b71c1c' },
+  'none': { short: '无人报考', desc: '一志愿无人进复试，也无调剂录取', color: '#f5f5f5', textColor: '#999' },
+  '?': { short: '数据不足', desc: '关键数据缺失', color: '#f5f5f5', textColor: '#999' },
+};
+
+function showSchoolFunnel(idx) {
+  const s = schoolsData[idx];
+  if (!s) return;
+  const ti = typeInfo[s.type] || typeInfo['?'];
+  const levelClass = s.level === '很容易' ? 'very-easy' : s.level === '容易' ? 'easy' : s.level === '中等' ? 'mid' : s.level === '较难' ? 'hard' : 'extreme';
+  const typeDisplay = s.type === 'none' ? '无' : s.type;
+  const noApplicant = s.no_applicant || s.fu === 0;
+  function esc(t){if(t==null)return '';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  document.getElementById('modalHeader').innerHTML =
+    '<span class="m-type" style="background:'+ti.color+';color:'+ti.textColor+'">Type '+typeDisplay+' · '+ti.short+'</span>'+
+    '<div class="m-title">'+s.name+' '+s.major+'</div>'+
+    '<div class="m-city">'+s.province+' · '+s.area+'区</div>'+
+    '<span class="m-badge '+levelClass+'">综合难度 '+s.difficulty+'/10 · '+s.level+'</span>';
+  const plan=s.plan,fu=s.fu,lu=s.lu,ming=s.ming,tjf=s.tjf,tjl=s.tjl;
+  const maxVal=Math.max(plan,fu,lu,ming,tjf,tjl,1);
+  const hasTj=ming>0||tjf>0||tjl>0;
+  let html='';
+  let w=plan/maxVal*70;
+  html+='<div class="row"><div class="row-label">计划招生</div><div class="bar-wrap"><div class="bar yi" style="width:'+w.toFixed(1)+'%">'+plan+'</div></div><div class="rate"></div></div>';
+  if(noApplicant){
+    html+='<div class="row"><div class="row-label">一志愿进复试</div><div class="bar-wrap"><div class="bar yi" style="width:0%">0</div></div><div class="rate yi"><strong style="color:#999">无人报考</strong></div></div>';
+    html+='<div class="row"><div class="row-label">一志愿录取</div><div class="bar-wrap"><div class="bar yi" style="width:0%">0</div></div><div class="rate yi"><strong>-</strong></div></div>';
+  }else{
+    w=fu/maxVal*70;
+    html+='<div class="row"><div class="row-label">一志愿进复试</div><div class="bar-wrap"><div class="bar yi" style="width:'+w.toFixed(1)+'%">'+fu+'</div></div><div class="rate yi"><strong>'+s.yi_ratio.toFixed(2)+'</strong><br>一志愿竞争比</div></div>';
+    w=lu/maxVal*70;
+    const fuluVal=fu>0&&lu>0?(fu/lu).toFixed(2):'-';
+    html+='<div class="row"><div class="row-label">一志愿录取</div><div class="bar-wrap"><div class="bar yi" style="width:'+w.toFixed(1)+'%">'+lu+'</div></div><div class="rate yi"><strong>'+fuluVal+'</strong><br>复录比</div></div>';
+  }
+  if(hasTj){
+    html+='<div class="divider">↓ 调剂通道</div>';
+    w=ming/maxVal*70;
+    html+='<div class="row"><div class="row-label">调剂名额</div><div class="bar-wrap"><div class="bar tj" style="width:'+w.toFixed(1)+'%">'+ming+'</div></div><div class="rate"></div></div>';
+    w=tjf/maxVal*70;
+    html+='<div class="row"><div class="row-label">调剂进复试</div><div class="bar-wrap"><div class="bar tj" style="width:'+w.toFixed(1)+'%">'+tjf+'</div></div><div class="rate tj"><strong>'+s.tj_ratio.toFixed(2)+'</strong><br>调剂竞争比</div></div>';
+    w=tjl/maxVal*70;
+    const tjPct=tjf>0?(tjl/tjf*100).toFixed(1):'-';
+    html+='<div class="row"><div class="row-label">调剂录取</div><div class="bar-wrap"><div class="bar tj" style="width:'+w.toFixed(1)+'%">'+tjl+'</div></div><div class="rate tj"><strong>'+tjPct+'%</strong><br>调剂录取率</div></div>';
+  }
+  document.getElementById('modalFunnel').innerHTML=html;
+  var sizeAdjText=s.size_adjust>0?'+'+s.size_adjust:'—';
+  var sizeAdjColor=s.size_adjust>0?'#e65100':'#999';
+  document.getElementById('modalScores').innerHTML=
+    '<div class="modal-score-item"><div class="label">竞争比得分</div><div class="value blue">'+s.comp_score+'</div></div>'+
+    '<div class="modal-score-item"><div class="label">分数难度(分段)</div><div class="value red">'+s.diff_score+'</div></div>'+
+    '<div class="modal-score-item"><div class="label">规模修正</div><div class="value" style="color:'+sizeAdjColor+'">'+sizeAdjText+'</div></div>'+
+    '<div class="modal-score-item"><div class="label">综合难度</div><div class="value dark">'+s.difficulty+'</div></div>'+
+    '<div class="modal-score-item"><div class="label">复试线</div><div class="value dark" style="font-size:14px">'+s.total_score+' 分</div></div>'+
+    '<div class="modal-score-item"><div class="label">计划招生</div><div class="value dark" style="font-size:14px">'+s.plan+' 人</div></div>';
+  let infoHtml='<div class="modal-info-title"><span class="icon">i</span>院校基础信息</div><div class="info-grid">';
+  infoHtml+='<div class="info-item"><span class="info-label">院校代码</span><span class="info-value">'+esc(s.school_code)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">学校性质</span><span class="info-value highlight">'+esc(s.nature)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">学习方式</span><span class="info-value highlight">'+esc(s.study_mode)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">学制</span><span class="info-value">'+esc(s.duration)+' 年</span></div>';
+  var tuitionStr=s.tuition?s.tuition+' 万元':'-';
+  infoHtml+='<div class="info-item"><span class="info-label">总学费</span><span class="info-value highlight">'+tuitionStr+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">大专可报</span><span class="info-value highlight">'+esc(s.college_diploma)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">省份</span><span class="info-value">'+esc(s.province)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">所在地市</span><span class="info-value">'+esc(s.city)+'</span></div>';
+  infoHtml+='<div class="info-item full"><span class="info-label">招生院系</span><span class="info-value">'+esc(s.department)+'</span></div>';
+  infoHtml+='<div class="info-item full"><span class="info-label">专业类别</span><span class="info-value">'+esc(s.major_category)+'</span></div>';
+  infoHtml+='<div class="info-item full"><span class="info-label">专业名称</span><span class="info-value">'+esc(s.major_full)+'</span></div>';
+  if(s.research_dir&&s.research_dir!=='(01)不区分研究方向'){infoHtml+='<div class="info-item full"><span class="info-label">研究方向</span><span class="info-value long">'+esc(s.research_dir)+'</span></div>';}
+  infoHtml+='<div class="info-item"><span class="info-label">上课地点</span><span class="info-value">'+esc(s.class_location)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">上课方式</span><span class="info-value">'+esc(s.class_mode)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">退役计划</span><span class="info-value">'+esc(s.veteran)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">少骨计划</span><span class="info-value">'+esc(s.minority)+'</span></div>';
+  if(s.other_info)infoHtml+='<div class="info-item full"><span class="info-label">其他</span><span class="info-value">'+esc(s.other_info)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">调剂</span><span class="info-value">'+esc(s.transfer_status)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">拟招生</span><span class="info-value">'+(s.plan||'-')+' 人</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">复试线</span><span class="info-value highlight">'+(s.total_score||'-')+' 分</span></div>';
+  if(s.score_diff)infoHtml+='<div class="info-item"><span class="info-label">分差(超国家线)</span><span class="info-value">'+esc(s.score_diff)+'</span></div>';
+  if(s.english2)infoHtml+='<div class="info-item"><span class="info-label">英语二</span><span class="info-value">'+esc(s.english2)+'</span></div>';
+  if(s.management)infoHtml+='<div class="info-item"><span class="info-label">管理综合</span><span class="info-value">'+esc(s.management)+'</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">一志愿进复试</span><span class="info-value">'+(s.fu||0)+' 人</span></div>';
+  infoHtml+='<div class="info-item"><span class="info-label">一志愿录取</span><span class="info-value">'+(s.lu||0)+' 人</span></div>';
+  if(s.admission_rate)infoHtml+='<div class="info-item"><span class="info-label">录取率</span><span class="info-value">'+esc(s.admission_rate)+'</span></div>';
+  if(s.ming)infoHtml+='<div class="info-item"><span class="info-label">调剂名额</span><span class="info-value">'+s.ming+' 人</span></div>';
+  if(s.tjf)infoHtml+='<div class="info-item"><span class="info-label">调剂进复试</span><span class="info-value">'+s.tjf+' 人</span></div>';
+  if(s.tjl)infoHtml+='<div class="info-item"><span class="info-label">调剂录取</span><span class="info-value">'+s.tjl+' 人</span></div>';
+  if(s.tj_admission_rate)infoHtml+='<div class="info-item"><span class="info-label">调剂录取率</span><span class="info-value">'+esc(s.tj_admission_rate)+'</span></div>';
+  infoHtml+='</div>';
+  document.getElementById('modalInfo').innerHTML=infoHtml;
+  if(s.admission_analysis){
+    document.getElementById('modalAnalysis').innerHTML='<div class="analysis-title">录取分析</div>'+s.admission_analysis.replace(/；/g,'<br>');
+    document.getElementById('modalAnalysis').style.display='block';
+  }else{document.getElementById('modalAnalysis').style.display='none';}
+  var hasDetail=s.written_exam||s.interview_content||s.interview_form||s.score_calc||s.total_calc||s.reference_books;
+  if(hasDetail){
+    var detailHtml='<div class="modal-detail-toggle" onclick="toggleDetail(this)"><span class="arrow">▶</span> 复试详细信息</div><div class="modal-detail-body">';
+    if(s.written_exam)detailHtml+='<div class="modal-detail-section"><div class="d-title">笔试内容</div><div class="d-content">'+esc(s.written_exam)+'</div></div>';
+    if(s.interview_content)detailHtml+='<div class="modal-detail-section"><div class="d-title">面试内容</div><div class="d-content">'+esc(s.interview_content)+'</div></div>';
+    if(s.interview_form)detailHtml+='<div class="modal-detail-section"><div class="d-title">面试形式</div><div class="d-content">'+esc(s.interview_form)+'</div></div>';
+    if(s.reference_books)detailHtml+='<div class="modal-detail-section"><div class="d-title">参考书目</div><div class="d-content">'+esc(s.reference_books)+'</div></div>';
+    if(s.score_calc)detailHtml+='<div class="modal-detail-section"><div class="d-title">成绩计算</div><div class="d-content">'+esc(s.score_calc)+'</div></div>';
+    if(s.total_calc)detailHtml+='<div class="modal-detail-section"><div class="d-title">总分计算</div><div class="d-content">'+esc(s.total_calc)+'</div></div>';
+    detailHtml+='</div>';
+    document.getElementById('modalDetail').innerHTML=detailHtml;
+    document.getElementById('modalDetail').style.display='block';
+  }else{document.getElementById('modalDetail').style.display='none';}
+  if(s.remark){document.getElementById('modalRemark').innerHTML='备注：'+s.remark;document.getElementById('modalRemark').style.display='block';}
+  else{document.getElementById('modalRemark').style.display='none';}
+  document.getElementById('schoolModal').classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeModal(e){document.getElementById('schoolModal').classList.remove('active');document.body.style.overflow='';}
+function closeModalBtn(){closeModal();}
+function toggleDetail(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open');}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+</script>
+
+<script>
+// iframe 嵌入模式:隐藏 page-header
+if(new URLSearchParams(location.search).has('embed'))document.body.classList.add('embed');
+</script>
+
+<script>
+(function(){
+  var DATA=schoolsData;
+  var LV={'很容易':0,'容易':1,'中等':2,'较难':3,'很难':4};
+  var LVCLS={'很容易':'very-easy','容易':'easy','中等':'mid','较难':'hard','很难':'extreme'};
+  function tLabel(t){return (!t||t==='none')?'—':t;}
+  function barColor(d){return d<1.6?'#81c784':d<3?'#66bb6a':d<5?'#ffa726':d<6.5?'#ef5350':'#b71c1c';}
+  function esc(t){if(t==null||t==='')return '-';return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function val(s,k){if(k==='tuition')return parseFloat(s.tuition)||0;if(k==='difficulty')return s.difficulty;if(k==='comp_score')return s.comp_score;if(k==='diff_score')return s.diff_score;if(k==='total_score')return s.total_score;var v=s[k];return typeof v==='number'?v:String(v);}
+  var cityOpts=Array.from(new Set(DATA.map(function(s){return s.city;}).filter(Boolean))).sort(function(a,b){return String(a).localeCompare(String(b),'zh');});
+  var opts={major:['MBA','MPA','MEM','MTA'],province:['四川','重庆','云南','贵州','陕西'],city:cityOpts,area:['A','B'],level:['很容易','容易','中等','较难','很难'],type:['A','B','C','D','E','F','G','H'],study_mode:['非全日制','全日制','半全日制'],college_diploma:['可报','不可报'],class_mode:['周末班','隔周周末班','月度集中班','学期集中班','晚班','周中+周末半脱产','周一至周五全脱产','线上+线下集中班'],veteran:['是','否'],minority:['是','否']};
+  var cats=[['major','专业'],['province','省份'],['city','城市'],['area','考区'],['study_mode','学习方式'],['class_mode','上课方式'],['college_diploma','大专'],['veteran','退役计划'],['minority','少骨计划'],['level','难度'],['type','类型']];
+  var chipCatColors={major:['#e3f0fa','#a8c8e8','#0d47a1'],province:['#efe6f5','#c9b4d8','#4a148c'],city:['#e5f1ee','#a8d0c5','#004d40'],area:['#e8f1f5','#b0cad5','#37474f'],study_mode:['#fbeadc','#f4c896','#bf360c'],class_mode:['#fbf4d6','#d5c47a','#6b5b1b'],college_diploma:['#f7e3ea','#e8b8ce','#880e4f'],veteran:['#eaf1d7','#c5d99a','#33691e'],minority:['#f2e9d3','#dcc99a','#5d4037'],level:['#f7dfd8','#e8a89a','#b71c1c'],type:['#e0e5eb','#a2adba','#37474f']};
+
+  var state={q:'',sortKey:'difficulty',sortDir:'asc',focusCity:'',sel:{major:{},province:{},city:{},area:{},level:{},type:{},study_mode:{},class_mode:{},college_diploma:{},veteran:{},minority:{}},dMin:'',dMax:'',sMin:'',sMax:'',tMin:'',tMax:'',durMin:'',durMax:''};
+
+  // 生成 chip 面板
+  var chHtml='';
+  cats.forEach(function(c){var cat=c[0],lb=c[1],col=chipCatColors[cat]||['#eef2f6','#d5dde5','#37474f'];chHtml+='<div class="fp-group"><label style="background:'+col[0]+';border-color:'+col[1]+';color:'+col[2]+';">'+lb+'</label><div class="chips" data-cat="'+cat+'">';opts[cat].forEach(function(o){chHtml+='<span class="chip" data-cat="'+cat+'" data-val="'+o+'">'+o+'</span>';});chHtml+='</div></div>';});
+  document.getElementById('fpChips').innerHTML=chHtml;
+
+  function anySel(cat){for(var k in state.sel[cat])if(state.sel[cat][k])return true;return false;}
+  function filter(){var out=[];for(var i=0;i<DATA.length;i++){var s=DATA[i];if(state.q&&s.name.indexOf(state.q)<0)continue;if(anySel('major')&&!state.sel.major[s.major])continue;if(anySel('province')&&!state.sel.province[s.province])continue;if(anySel('city')&&!state.sel.city[s.city])continue;if(anySel('area')&&!state.sel.area[s.area])continue;if(anySel('study_mode')&&!state.sel.study_mode[s.study_mode])continue;if(anySel('class_mode')){var cm=s.class_mode||'';var mm=false;for(var kk in state.sel.class_mode){if(state.sel.class_mode[kk]&&cm.indexOf(kk)>=0){mm=true;break;}}if(!mm)continue;}if(anySel('college_diploma')&&!state.sel.college_diploma[s.college_diploma])continue;if(anySel('veteran')&&!state.sel.veteran[s.veteran])continue;if(anySel('minority')&&!state.sel.minority[s.minority])continue;if(anySel('level')&&!state.sel.level[s.level])continue;if(anySel('type')&&!state.sel.type[s.type])continue;var d=s.difficulty,sc=s.total_score,tu=parseFloat(s.tuition)||0,dur=parseFloat(s.duration)||0;if(state.dMin&&d<+state.dMin)continue;if(state.dMax&&d>+state.dMax)continue;if(state.sMin&&sc<+state.sMin)continue;if(state.sMax&&sc>+state.sMax)continue;if(state.tMin&&tu<+state.tMin)continue;if(state.tMax&&tu>+state.tMax)continue;if(state.durMin&&dur<+state.durMin)continue;if(state.durMax&&dur>+state.durMax)continue;out.push(i);}return out;}
+
+  // --- 坐标转换 WGS-84 → GCJ-02（高德/腾讯/百度中国地图坐标系）---
+  function wgs84ToGcj02(lng,lat){
+    var a=6378245.0,ee=0.00669342162296594323;
+    var tLat=-100+2*(lng-105)+3*(lat-35)+0.2*(lat-35)*(lat-35)+0.1*(lng-105)*(lat-35)+0.2*Math.sqrt(Math.abs(lng-105));
+    tLat+=(20*Math.sin(6*(lng-105)*Math.PI)+20*Math.sin(2*(lng-105)*Math.PI))*2/3;
+    tLat+=(20*Math.sin((lat-35)*Math.PI)+40*Math.sin((lat-35)/3*Math.PI))*2/3;
+    tLat+=(160*Math.sin((lat-35)/12*Math.PI)+320*Math.sin((lat-35)*Math.PI/30))*2/3;
+    var tLng=300+(lng-105)+2*(lat-35)+0.1*(lng-105)*(lng-105)+0.1*(lng-105)*(lat-35)+0.1*Math.sqrt(Math.abs(lng-105));
+    tLng+=(20*Math.sin(6*(lng-105)*Math.PI)+20*Math.sin(2*(lng-105)*Math.PI))*2/3;
+    tLng+=(20*Math.sin((lng-105)*Math.PI)+40*Math.sin((lng-105)/3*Math.PI))*2/3;
+    tLng+=(150*Math.sin((lng-105)/12*Math.PI)+300*Math.sin((lng-105)/30*Math.PI))*2/3;
+    var radLat=lat/180*Math.PI;
+    var magic=1-ee*Math.sin(radLat)*Math.sin(radLat);
+    var sqrtMagic=Math.sqrt(magic);
+    var dLat=(tLat*180)/((a*(1-ee))/(magic*sqrtMagic)*Math.PI);
+    var dLng=(tLng*180)/(a/sqrtMagic*Math.cos(radLat)*Math.PI);
+    return [lng+dLng,lat+dLat];
+  }
+
+  // --- Leaflet 地图（高德中文底图）---
+  var map=L.map('mapChart',{
+    center:[30.2,105.5],
+    zoom:6,
+    minZoom:5,
+    maxZoom:15,
+    zoomControl:false,
+    scrollWheelZoom:true,
+    zoomSnap:0.5,
+    zoomDelta:1,
+    wheelPxPerZoomLevel:60,
+    wheelDebounceTime:20,
+    inertia:true,
+    inertiaDeceleration:3500,
+    keyboard:true,
+    keyboardPanDelta:80,
+    maxBounds:L.latLngBounds([15,82],[52,130]),
+    maxBoundsViscosity:1.0,
+    worldCopyJump:false,
+    zoomAnimationThreshold:8
+  });
+  var isFirstMapRender=true;
+
+  // Zoom 控件挪到右下 + 加竖向 slider(可拖动缩放)
+  L.control.zoom({position:'bottomright'}).addTo(map);
+  var ZoomSlider=L.Control.extend({
+    options:{position:'bottomright'},
+    onAdd:function(m){
+      var c=L.DomUtil.create('div','leaflet-control-zoom-slider leaflet-bar');
+      var s=L.DomUtil.create('input','',c);
+      s.type='range';
+      s.min=m.getMinZoom();
+      s.max=m.getMaxZoom();
+      s.step=0.5;
+      s.value=m.getZoom();
+      L.DomEvent.on(s,'input',function(e){m.setZoom(parseFloat(e.target.value));});
+      L.DomEvent.disableClickPropagation(c);
+      L.DomEvent.disableScrollPropagation(c);
+      m.on('zoomend zoomlevelschange',function(){s.value=m.getZoom();});
+      return c;
+    }
+  });
+  map.addControl(new ZoomSlider());
+  // 5 省矢量底图(离线·全国参考·5 省突出·市区街道)
+  Promise.all([
+    fetch('./data/5-provinces.geojson').then(function(r){return r.json();}),
+    fetch('./data/china-provinces-full.json').then(function(r){return r.json();}).catch(function(){return null;}),
+    fetch('./data/roads-major.geojson').then(function(r){return r.json();}).catch(function(){return null;}),
+    fetch('./data/roads-city.geojson').then(function(r){return r.json();}).catch(function(){return null;})
+  ]).then(function(rs){
+    var gj=rs[0],chinaAll=rs[1],roads=rs[2],cityRoads=rs[3];
+    // 1. 中国其他省份(极淡·作为 5 省的中国位置参考)
+    if(chinaAll){
+      var target={'四川省':1,'重庆市':1,'云南省':1,'贵州省':1,'陕西省':1};
+      var others={type:'FeatureCollection',features:chinaAll.features.filter(function(f){return !target[f.properties.name];})};
+      L.geoJSON(others,{style:{fillColor:'#dfe3e8',fillOpacity:1,color:'#c0c7ce',weight:0.5,opacity:0.85},interactive:false}).addTo(map);
+    }
+    // 2. 5 省 fill(更亮,视觉突出于其他省)
+    L.geoJSON(gj,{style:{fillColor:'#f0f3f6',fillOpacity:1,color:'#c8d0d8',weight:0.8,opacity:0.9}}).addTo(map);
+    // 3. 主干道 + 高速网(浅色)
+    if(roads){
+      L.geoJSON(roads,{
+        style:function(f){var h=f.properties.h;return {color:h==='trunk'?'#b8c0c8':'#8ea1af',weight:h==='trunk'?0.6:1.1,opacity:0.85};},
+        interactive:false
+      }).addTo(map);
+    }
+    // 3.5. 5 大市市区街道网(浅色·zoom in 后清晰)
+    if(cityRoads){
+      L.geoJSON(cityRoads,{
+        style:function(f){var h=f.properties.h;return {color:h==='primary'?'#c0c8cf':'#d0d6dc',weight:h==='primary'?0.5:0.4,opacity:0.7};},
+        interactive:false
+      }).addTo(map);
+    }
+    // 4. 5 省细粗轮廓(黛青主色 · 突出 5 省范围)
+    L.geoJSON(gj,{style:{fillColor:'transparent',fillOpacity:0,color:'#3A6A72',weight:1.4,opacity:0.9,lineJoin:'round'},interactive:false}).addTo(map);
+    // 5. 主要城市名标注
+    Object.keys(MAJOR_CITIES).forEach(function(city){
+      var w=MAJOR_CITIES[city],g=wgs84ToGcj02(w[0],w[1]);
+      L.marker([g[1],g[0]],{icon:L.divIcon({className:'city-label',html:city,iconSize:[40,14],iconAnchor:[20,-2]}),interactive:false,keyboard:false}).addTo(map);
+    });
+    // 6. 触发首次 render + invalidate
+    setTimeout(function(){map.invalidateSize();render();},80);
+  }).catch(function(err){document.getElementById('mapChart').innerHTML='<div class="map-loading">地图数据加载失败: '+err.message+'</div>';});
+  var markersLayer=L.layerGroup().addTo(map);
+  var mapReady=true;
+
+  // 加载校区级坐标(异步)
+  var SCHOOLS_GEO={};
+  fetch('./schools_geo.json').then(function(r){return r.json();}).then(function(data){
+    Object.keys(data).forEach(function(k){if(!k.startsWith('_'))SCHOOLS_GEO[k]=data[k];});
+    isFirstMapRender=true;
+    render();
+  }).catch(function(err){console.warn('校区坐标加载失败,fallback 城市级:',err);});
+
+  // 多校区坐标 override(key: 学校名|class_location)
+  var CAMPUS_OVERRIDES={
+    "四川大学|武侯区望江校区/双流区江安校区":{"lng":104.0365,"lat":30.5963,"addr":"望江+江安 双校区"},
+    "电子科技大学|高新西区清水河校区/成华区沙河校区":{"lng":103.9290,"lat":30.7538,"addr":"成都·高新西区西源大道2006号(清水河校区)"},
+    "西南财经大学|温江区柳林校区‌":{"lng":103.8534,"lat":30.7013,"addr":"成都·温江区柳台大道555号(柳林校区)"},
+    "四川农业大学|都江堰市都江堰校区":{"lng":103.6167,"lat":30.9830,"addr":"都江堰市青城山镇(都江堰校区)"},
+    "四川外国语大学|沙坪坝区山下东校区":{"lng":106.4437,"lat":29.5842,"addr":"重庆·沙坪坝区烈士墓(山下东校区)"},
+    "重庆三峡学院|万州区沙龙校区‌":{"lng":108.3956,"lat":30.7658,"addr":"重庆·万州区沙龙路(沙龙校区)"},
+    "云南大学|呈贡新区呈贡校区":{"lng":102.8506,"lat":24.8317,"addr":"昆明·呈贡区大学城东外环南路(呈贡校区)"},
+    "云南财经大学|安宁市安宁校区":{"lng":102.4737,"lat":24.9195,"addr":"安宁市职教基地(安宁校区)"},
+    "云南民族大学|呈贡区雨花校区":{"lng":102.8523,"lat":24.8388,"addr":"昆明·呈贡区雨花街道月华街2929号(雨花校区)"},
+    "昆明理工大学|五华区莲华校区":{"lng":102.7124,"lat":25.0554,"addr":"昆明·五华区学府路253号(莲华校区)"},
+    "贵州大学|花溪区花溪东校区":{"lng":106.6841,"lat":26.4342,"addr":"贵阳·花溪区花溪大道东段(花溪东校区)"},
+    "贵州民族大学|花溪区花溪校区":{"lng":106.6553,"lat":26.4276,"addr":"贵阳·花溪区花溪大道南段249号(花溪校区)"},
+    "西北农林科技大学|杨陵区南校区":{"lng":108.0729,"lat":34.2585,"addr":"咸阳·杨陵区西农路3号(南校区)"},
+    "西安科技大学|临潼区临潼校区":{"lng":109.2036,"lat":34.3701,"addr":"西安·临潼区秦唐大道(临潼校区)"},
+    "西安石油大学|鄠邑区鄠邑校区":{"lng":108.5876,"lat":34.1096,"addr":"西安·鄠邑区西户路168号(鄠邑校区)"}
+  };
+
+  map.on('click',function(){
+    if(state.focusCity){state.focusCity='';render();}
+  });
+
+  // 省份中心 + 推荐 zoom（WGS-84）
+  var PROV_CENTER={
+    '四川':[103.5,30.7,7],
+    '重庆':[107.5,29.6,8],
+    '云南':[101.5,25.0,7],
+    '贵州':[106.7,26.6,7],
+    '陕西':[108.9,34.5,7]
+  };
+  function focusMap(){
+    var selProvs=Object.keys(state.sel.province).filter(function(k){return state.sel.province[k];});
+    var selCities=Object.keys(state.sel.city).filter(function(k){return state.sel.city[k];});
+    if(selCities.length>0){
+      var latLngs=selCities.filter(function(c){return CITY_COORDS[c];}).map(function(c){var w=CITY_COORDS[c],g=wgs84ToGcj02(w[0],w[1]);return [g[1],g[0]];});
+      if(latLngs.length===1)map.setView(latLngs[0],10,{animate:true});
+      else if(latLngs.length>1)map.fitBounds(L.latLngBounds(latLngs),{padding:[60,60],maxZoom:9,animate:true});
+    }else if(selProvs.length>0){
+      if(selProvs.length===1&&PROV_CENTER[selProvs[0]]){
+        var pc=PROV_CENTER[selProvs[0]];var g=wgs84ToGcj02(pc[0],pc[1]);
+        map.setView([g[1],g[0]],pc[2],{animate:true});
+      }else{
+        var pBounds=[];selProvs.forEach(function(p){if(PROV_CENTER[p]){var g=wgs84ToGcj02(PROV_CENTER[p][0],PROV_CENTER[p][1]);pBounds.push([g[1],g[0]]);}});
+        if(pBounds.length)map.fitBounds(L.latLngBounds(pBounds),{padding:[60,60],maxZoom:7,animate:true});
+      }
+    }else{
+      var allB=Object.keys(CITY_COORDS).map(function(c){var w=CITY_COORDS[c],g=wgs84ToGcj02(w[0],w[1]);return [g[1],g[0]];});
+      map.fitBounds(L.latLngBounds(allB),{padding:[40,40],maxZoom:8,animate:true});
+    }
+  }
+
+  // 坐标查找:先看多校区 override,再看主校区,最后 fallback 城市级
+  function getSchoolCoord(name,classLocation){
+    var overrideKey=name+'|'+(classLocation||'');
+    if(CAMPUS_OVERRIDES[overrideKey])return {coord:[CAMPUS_OVERRIDES[overrideKey].lng,CAMPUS_OVERRIDES[overrideKey].lat],addr:CAMPUS_OVERRIDES[overrideKey].addr,confidence:CAMPUS_OVERRIDES[overrideKey].confidence};
+    if(SCHOOLS_GEO[name])return {coord:[SCHOOLS_GEO[name].lng,SCHOOLS_GEO[name].lat],addr:SCHOOLS_GEO[name].addr,confidence:SCHOOLS_GEO[name].confidence};
+    return null;
+  }
+
+  function renderMap(){
+    var idxs=filter();
+    // 按(学校名+校区)聚合(校区级精度)
+    var campusAgg={};
+    idxs.forEach(function(idx){
+      var s=DATA[idx];
+      var key=s.name+'|'+(s.class_location||'');
+      if(!campusAgg[key])campusAgg[key]={name:s.name,campus:s.class_location||'',count:0,sumDiff:0,city:s.city,province:s.province,idxs:[]};
+      campusAgg[key].count++;
+      campusAgg[key].sumDiff+=s.difficulty;
+      campusAgg[key].idxs.push(idx);
+    });
+    var campusKeys=Object.keys(campusAgg);
+    markersLayer.clearLayers();
+    var RADIUS=6;
+    // 首次渲染保留 init 时的 center+zoom(聚焦 5 省核心)
+    if(isFirstMapRender&&campusKeys.length)isFirstMapRender=false;
+    campusKeys.forEach(function(k){
+      var g=campusAgg[k];
+      var avgDiff=g.count>0?g.sumDiff/g.count:0;
+      var got=getSchoolCoord(g.name,g.campus);
+      var coord=got?got.coord:CITY_COORDS[g.city];
+      var addr=got?got.addr:(g.city+' · '+g.campus+' · 城市级 fallback(校区待补)');
+      var confidence=got&&got.confidence==='low'?' <span style="color:#ffb74d">⚠</span>':'';
+      if(!coord)return;
+      var gcj=wgs84ToGcj02(coord[0],coord[1]);
+      var latLng=[gcj[1],gcj[0]];
+      var isFocused=state.focusCity===g.city;
+      var circle=L.circleMarker(latLng,{
+        radius:RADIUS,
+        fillColor:barColor(avgDiff),
+        color:isFocused?'#dc3c28':'#fff',
+        weight:isFocused?2:1,
+        opacity:1,
+        fillOpacity:.85
+      });
+      var tipHtml='<b>'+g.name+'</b>'+confidence+'<br/>'+addr+'<br/>命中项目：<b>'+g.count+' 项</b><br/>平均综合难度：<span class="diff-num" style="background:'+barColor(avgDiff)+'">'+avgDiff.toFixed(2)+'/10</span>';
+      circle.bindTooltip(tipHtml,{className:'bubble-tip',direction:'top',offset:[0,-4],sticky:false});
+      circle.on('click',function(e){
+        L.DomEvent.stopPropagation(e);
+        showSchoolFunnel(g.idxs[0]);
+      });
+      circle.on('mouseover',function(){this.setStyle({radius:RADIUS+3,weight:2});this.bringToFront();});
+      circle.on('mouseout',function(){this.setStyle({radius:RADIUS,weight:isFocused?2:1});});
+      circle.addTo(markersLayer);
+    });
+    // 气泡层置顶,避免被 geoJson 底图覆盖
+    markersLayer.eachLayer(function(l){if(l.bringToFront)l.bringToFront();});
+    renderSchools();
+  }
+
+  function renderSchools(){
+    var idxs=filter();
+    if(state.focusCity)idxs=idxs.filter(function(idx){return DATA[idx].city===state.focusCity;});
+    idxs.sort(function(a,b){var va=val(DATA[a],state.sortKey),vb=val(DATA[b],state.sortKey);var r;if(typeof va==='number'&&typeof vb==='number')r=va-vb;else r=String(va).localeCompare(String(vb),'zh');return state.sortDir==='asc'?r:-r;});
+    var html='';
+    if(!idxs.length){html='<div style="grid-column:1/-1;color:#888;text-align:center;padding:24px;font-size:13px;">当前筛选下无匹配院校</div>';}
+    idxs.slice(0,300).forEach(function(idx){
+      var s=DATA[idx];
+      var tu=(parseFloat(s.tuition)||0).toFixed(1);
+      var yi=(s.no_applicant||s.fu===0)?'无人报考':((s.yi_ratio!=null&&isFinite(+s.yi_ratio))?(+s.yi_ratio).toFixed(2):'—');
+      html+='<div class="school-card" data-idx="'+idx+'">'+
+        '<div class="sc-name"><span class="name-txt">'+esc(s.name)+'</span><span class="major-tag">'+esc(s.major)+'</span></div>'+
+        '<div class="sc-mini">'+
+          '<span class="lbl">学费</span><span class="val">'+tu+' 万</span>'+
+          '<span class="lbl">学制</span><span class="val">'+esc(s.duration)+' 年</span>'+
+          '<span class="lbl">学习方式</span><span class="val">'+esc(s.study_mode)+'</span>'+
+          '<span class="lbl">复试线</span><span class="val">'+s.total_score+' 分</span>'+
+          '<span class="lbl">一志愿竞争比</span><span class="val">'+yi+'</span>'+
+        '</div>'+
+        '<div class="sc-diff"><span class="diff-badge '+LVCLS[s.level]+'">'+s.level+' '+s.difficulty.toFixed(2)+'</span></div>'+
+      '</div>';
+    });
+    if(idxs.length>300)html+='<div style="grid-column:1/-1;color:#888;text-align:center;padding:10px;font-size:11px;">还有 '+(idxs.length-300)+' 项未显示，请缩小筛选范围</div>';
+    document.getElementById('schoolsGrid').innerHTML=html;
+    document.getElementById('highlightCity').textContent=state.focusCity?('· '+state.focusCity+' ('+idxs.length+' 项)'):'';
+  }
+
+  function renderKpi(){
+    var idxs=filter();
+    var n=idxs.length,dist=[0,0,0,0,0];
+    var sumYi=0,cntYi=0,sumScore=0,cntScore=0,sumTu=0,cntTu=0;
+    for(var i=0;i<idxs.length;i++){
+      var s=DATA[idxs[i]];
+      if(s.level in LV)dist[LV[s.level]]++;
+      if(!(s.no_applicant||s.fu===0)&&s.yi_ratio_real!=null&&isFinite(+s.yi_ratio_real)){sumYi+=+s.yi_ratio_real;cntYi++;}
+      if(s.total_score!=null&&isFinite(+s.total_score)){sumScore+=+s.total_score;cntScore++;}
+      var tu=parseFloat(s.tuition);
+      if(isFinite(tu)&&tu>0){sumTu+=tu;cntTu++;}
+    }
+    document.getElementById('kpiCount').textContent=n;
+    document.getElementById('fpCount').textContent=n;
+    document.getElementById('kpiLevelDist').innerHTML='<span class="dist"><span class="l1">'+dist[0]+'</span><span class="l2">'+dist[1]+'</span><span class="l3">'+dist[2]+'</span><span class="l4">'+dist[3]+'</span><span class="l5">'+dist[4]+'</span></span>';
+    document.getElementById('kpiAvgYi').textContent=cntYi?(sumYi/cntYi).toFixed(2):'—';
+    document.getElementById('kpiAvgScore').textContent=cntScore?Math.round(sumScore/cntScore):'—';
+    document.getElementById('kpiAvgTuition').textContent=cntTu?(sumTu/cntTu).toFixed(1):'—';
+  }
+
+  var CAT_LABELS={major:'专业',province:'省份',city:'城市',area:'考区',study_mode:'学习方式',class_mode:'上课方式',college_diploma:'大专',veteran:'退役',minority:'少骨',level:'难度',type:'类型'};
+  function renderCrumbs(){
+    var chips=[];
+    Object.keys(state.sel).forEach(function(cat){
+      Object.keys(state.sel[cat]).forEach(function(v){
+        if(state.sel[cat][v])chips.push('<span class="crumb-chip" data-cat="'+cat+'" data-val="'+esc(v)+'"><span class="cat">'+(CAT_LABELS[cat]||cat)+':</span>'+esc(v)+'<span class="x">×</span></span>');
+      });
+    });
+    if(state.q)chips.push('<span class="crumb-chip" data-q="1"><span class="cat">搜索:</span>'+esc(state.q)+'<span class="x">×</span></span>');
+    if(state.focusCity)chips.push('<span class="crumb-chip" data-focus="1" style="background:#3A6A72;color:#fff;border-color:#3A6A72;"><span class="cat" style="color:rgba(255,255,255,.75)">聚焦:</span>'+esc(state.focusCity)+'<span class="x">×</span></span>');
+    var ranges=[['dMin','dMax','难度值'],['sMin','sMax','复试线'],['tMin','tMax','学费'],['durMin','durMax','学制']];
+    ranges.forEach(function(r){
+      if(state[r[0]]||state[r[1]]){
+        var txt=(state[r[0]]||'*')+'~'+(state[r[1]]||'*');
+        chips.push('<span class="crumb-chip" data-range="'+r[0]+','+r[1]+'"><span class="cat">'+r[2]+':</span>'+txt+'<span class="x">×</span></span>');
+      }
+    });
+    var host=document.getElementById('crumbStrip');
+    if(!chips.length){host.innerHTML='';return;}
+    host.innerHTML='<span class="crumb-prefix">当前筛选</span>'+chips.join('')+'<button class="crumb-clear" id="crumbClear">全部清除</button>';
+    document.getElementById('crumbClear').addEventListener('click',function(){document.getElementById('fpReset').click();});
+    host.querySelectorAll('.crumb-chip').forEach(function(el){
+      el.addEventListener('click',function(){
+        var cat=this.getAttribute('data-cat'),v=this.getAttribute('data-val'),q=this.getAttribute('data-q'),rg=this.getAttribute('data-range'),fc=this.getAttribute('data-focus');
+        if(cat){
+          delete state.sel[cat][v];
+          var chip=document.querySelector('.chip[data-cat="'+cat+'"][data-val="'+v.replace(/"/g,'\\"')+'"]');
+          if(chip)chip.classList.remove('active');
+        }else if(q){state.q='';document.getElementById('fpSearch').value='';}
+        else if(fc){state.focusCity='';}
+        else if(rg){var ks=rg.split(',');state[ks[0]]='';state[ks[1]]='';var e1=document.getElementById(ks[0]),e2=document.getElementById(ks[1]);if(e1)e1.value='';if(e2)e2.value='';}
+        render();
+        if(cat==='province'||cat==='city')focusMap();
+      });
+    });
+  }
+
+  function render(){
+    if(mapReady)renderMap();
+    else renderSchools();
+    renderKpi();
+    renderCrumbs();
+  }
+
+  document.getElementById('fpSearch').addEventListener('input',function(e){state.q=e.target.value.trim();render();});
+  document.getElementById('fpSortKey').addEventListener('change',function(e){state.sortKey=e.target.value;render();});
+  document.getElementById('fpSortDir').addEventListener('click',function(){state.sortDir=state.sortDir==='asc'?'desc':'asc';this.textContent=state.sortDir==='asc'?'↑ 升序':'↓ 降序';render();});
+  document.getElementById('fpReset').addEventListener('click',function(){state.q='';state.sortKey='difficulty';state.sortDir='asc';state.focusCity='';state.sel={major:{},province:{},city:{},area:{},level:{},type:{},study_mode:{},class_mode:{},college_diploma:{},veteran:{},minority:{}};state.dMin=state.dMax=state.sMin=state.sMax=state.tMin=state.tMax=state.durMin=state.durMax='';document.getElementById('fpSearch').value='';document.getElementById('fpSortKey').value='difficulty';document.getElementById('fpSortDir').textContent='↑ 升序';['dMin','dMax','sMin','sMax','tMin','tMax','durMin','durMax'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});var ch2=document.querySelectorAll('.chip.active');for(var i=0;i<ch2.length;i++)ch2[i].classList.remove('active');render();focusMap();});
+  document.getElementById('fpChips').addEventListener('click',function(e){var el=e.target;if(el.classList.contains('chip')){var cat=el.getAttribute('data-cat'),v=el.getAttribute('data-val');if(state.sel[cat][v])delete state.sel[cat][v];else state.sel[cat][v]=true;el.classList.toggle('active');render();if(cat==='province'||cat==='city')focusMap();}});
+
+  // 清单卡片点击 → 只弹 modal(不 pan 地图,地图只跟筛选联动)
+  document.getElementById('schoolsGrid').addEventListener('click',function(e){
+    var card=e.target;
+    while(card&&card!==this&&!card.classList.contains('school-card'))card=card.parentElement;
+    if(!card||!card.classList.contains('school-card'))return;
+    var idx=parseInt(card.getAttribute('data-idx'),10);
+    if(!isNaN(idx))showSchoolFunnel(idx);
+  });
+  ['dMin','dMax','sMin','sMax','tMin','tMax','durMin','durMax'].forEach(function(id){var el=document.getElementById(id);if(el)el.addEventListener('input',function(e){state[id]=e.target.value.trim();render();});});
+
+  // 首次渲染
+  render();
+
+  window.addEventListener('resize',function(){map.invalidateSize();});
+  setTimeout(function(){map.invalidateSize();},80);
+})();
+</script>
+
+</body>
+</html>

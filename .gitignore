@@ -2,5 +2,11 @@
 # iCloud 里其他 PDF/JPG/XLSX/中文名 HTML 历史留档一律不同步到 GitHub
 *
 !.gitignore
-!index.html
-!pc.html
+!pc-map.html
+!map.html
+!26管综5省难度对比表-手机版.html
+!schools_geo.json
+!assets/
+!assets/**
+!data/
+!data/**
